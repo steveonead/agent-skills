@@ -1,15 +1,15 @@
 ---
 name: prd-to-tickets
 description: |
-  將 PRD 拆成可獨立認領的 GitHub issues，採用 tracer bullet vertical slice 搭配 FE/BE 分層子 issue 的混合結構，專為非 full-stack 團隊設計。
-  適用於以下情況：使用者想把 PRD 變成可執行工單、建立 GitHub issues、拆解需求成開發任務、開工前拆 ticket、將 PRD 轉成實作計畫。當使用者提到「拆票」、「PRD 拆 issue」、「建立 ticket」、「拆任務」、「拆 slice」時務必觸發，即使沒明說「GitHub」也先用此 skill。進入前提：PRD 已存在於 GitHub issue；若只有想法或模糊需求，先用 `clarify-requirement` / `write-a-prd` 收斂。
+  將 PRD 拆成可獨立認領的 GitHub issues，採用 tracer bullet vertical slice，每個 slice 一張 ticket。
+  適用於以下情況：使用者想把 PRD 變成可執行工單、建立 GitHub issues、拆解需求成開發任務、開工前拆 ticket、將 PRD 轉成實作計畫。當使用者提到「拆票」、「PRD 拆 issue」、「建立 ticket」、「拆任務」、「拆 slice」時務必觸發，即使沒明說「GitHub」也先用此 skill。進入前提：PRD 已存在於 GitHub issue；若只有想法或模糊需求，先用 `roast-engineer` / `idea-to-prd` 收斂。
 ---
 
 # PRD to Tickets
 
 ## 概述
 
-將 PRD 拆成 GitHub issues。核心哲學是 **tracer bullet vertical slice**——每個 slice 都要是一條橫跨所有整合層的窄切片，完成後可獨立 demo；但因為目標團隊不是 full-stack，slice 不再是「單一 ticket」，而是由一個 **parent issue** 加上 **FE / BE / contract / integration 子 issue** 組成的群組。這樣既保留 vertical slice 的整合風險前置與可驗證價值，又讓每張實作票可由單一角色獨立推進。
+將 PRD 拆成 GitHub issues。核心哲學是 **tracer bullet vertical slice**：每個 slice 都是一條橫跨所有整合層（schema、API、UI、tests）的垂直切片，完成後可獨立 demo。**一個 slice 對應一張 ticket**，由單一工程師端到端認領。
 
 ---
 
@@ -35,41 +35,33 @@ gh issue view <number> --comments
 
 把 PRD 的 user stories、scope、非目標看完再動手。不要只看標題就猜。
 
+一次讀完後把 user stories 編號 + 摘要留在 context，後續不要再 `gh issue view` 同一張 PRD（會讓長文反覆佔 context）。
+
 ---
 
 ### 步驟 3：探索 Codebase（選填）
 
 若尚未理解當前程式碼結構，用另一個 Agent 探索現狀（避免污染主 context）。重點關注：
 
-- 現有的 FE/BE 專案邊界（monorepo？分 repo？）
-- API 合約載體（OpenAPI？tRPC？手刻 types？）
-- 既有測試策略（integration test 跑在哪一側？）
+- 既有模組邊界與目錄慣例
+- 測試策略與 CI 流程
+- 現有的資料模型與 API 風格
 
-這些會影響「contract ticket」的具體產出形式。
+這些會影響 slice 拆分的粒度與順序。
 
 ---
 
 ### 步驟 4：草擬 Vertical Slices
 
-把 PRD 切成 **tracer bullet slices**。每個 slice 是一條端到端窄刀，完成後可 demo。
+把 PRD 切成 **tracer bullet slices**。每個 slice 是一條端到端窄切片，完成後可 demo，由一位全端工程師獨立完成。
 
 <vertical-slice-rules>
 - 每個 slice 跨越所有整合層（schema、API、UI、tests）
 - 完成的 slice 可以**獨立 demo 或驗證**
 - **多個薄 slice 優於少數厚 slice**
 - slice 有 HITL（需人為決策）與 AFK（可自動完成）之分，優先選 AFK
+- 一個 slice = 一張 ticket，不再拆成 FE/BE/contract/integration 子票
 </vertical-slice-rules>
-
-對**每個 slice**，再拆成下列子 issue：
-
-| 子 issue 類型 | 用途 | 何時省略 |
-|---------------|------|---------|
-| `contract` | 定義並凍結 API schema / types / 資料結構 | slice 純 FE 或純 BE 時可省略 |
-| `be` | 後端實作（含 integration test） | slice 無後端工作時省略 |
-| `fe` | 前端實作（使用 mocked API 開發） | slice 無前端工作時省略 |
-| `integration` | 串接 FE ↔ BE 的 E2E 驗證 | slice 只有單側時省略 |
-
-**為什麼這樣拆？** 團隊不是 full-stack，一張 ticket 不能要求一個人做兩層。合約先行讓 FE/BE 可以平行推進（FE mock API、BE 跑 integration test），最後用小張 integration ticket 收斂。這保留了 tracer bullet 的整合風險前置，同時讓每張票可由單一角色獨立認領。
 
 ---
 
@@ -81,8 +73,7 @@ gh issue view <number> --comments
 - **類型**：HITL / AFK
 - **Blocked by**：依賴的其他 slice（若有）
 - **涵蓋的 user stories**：對應 PRD 中的編號
-- **子 issue 計畫**：contract ✅ / be ✅ / fe ✅ / integration ✅（勾選實際會產出的）
-- **純單側標記**：若省略 contract，明確註明「純 FE」或「純 BE」並給理由
+- **端到端行為**：一句話描述完成後使用者能做到什麼
 
 向使用者確認：
 
@@ -90,9 +81,7 @@ gh issue view <number> --comments
 2. 依賴關係對嗎？
 3. 是否有 slice 該合併或再切？
 4. HITL / AFK 標記正確嗎？
-5. **每個 slice 的子 issue 計畫合理嗎？** 特別是：
-   - 省略 contract 的 slice，是否真的純單側？
-   - 有沒有 slice 漏了 integration ticket？
+5. 每個 slice 是否真的可以**獨立 demo**？若不行，代表不是 vertical slice，要重切。
 
 反覆迭代到使用者點頭。
 
@@ -102,12 +91,13 @@ gh issue view <number> --comments
 
 在真正呼叫 `gh issue create` 之前，對**整份草案**逐一確認：
 
-- [ ] 每個 slice parent 都有對應的 user stories 引用
-- [ ] **禁止跨層子 issue**：沒有任何一張子 issue 同時帶 `layer:be` 和 `layer:fe`
-- [ ] **合約先行**：若 slice 同時包含 FE+BE，必須有 contract sub-issue，且 FE/BE sub-issue 的 `Blocked by` 指向它
-- [ ] **integration 票的血統**：若 slice 有 integration sub-issue，其 `Blocked by` 必須列出同 slice 的 FE + BE
-- [ ] **純單側 slice 有明確理由**：若 slice 省略 contract，parent body 必須寫明「此 slice 純 FE / 純 BE，因為 X」
-- [ ] **slice 編號不衝突**：掃描現有 `slice-NN` label，新 slice 從未用過的編號開始
+- [ ] 每個 slice 都有對應的 user stories 引用
+- [ ] 每個 slice 完成後可獨立 demo（非半成品、非單層）
+- [ ] 依賴關係無環（沒有 A blocked by B、B blocked by A）
+- [ ] **slice 編號不衝突**：掃描同一 PRD 既有的 issues（title 開頭為 `<prd-number>.<數字> `，注意後面接空格），新 slice 從最大編號 + 1 開始
+- [ ] **body 不含跨 slice 的編號參照**：掃描每張 issue body，不得出現 `<prd-number>.<slice-num>`（如 `85.3 接手`）或硬編的 `#N` 指向其他 slice。指向 parent PRD issue 的 `#<prd-number>` 例外允許。詳見 `references/ticket-templates.md` 的「禁止在 body 參照其他 slice 的編號」
+
+> Slice 之間的 blocking 關係不在 body 寫死，而是在步驟 7 用 GitHub 原生 Issue Dependencies API 建立。本步驟只驗證關係規劃是否正確。
 
 任一項不通過，回步驟 4 修改。
 
@@ -115,89 +105,11 @@ gh issue view <number> --comments
 
 ### 步驟 7：建立 GitHub Issues
 
-**建立順序很重要**：parent → contract → be + fe → integration。這個順序讓「Blocked by」能填進真實的 issue 編號。
+**一律交給 sub-agent 執行**，流程與 prompt 組裝見 `references/subagent-prompt.md`，sub-agent 再依 `references/github-api-workflow.md` 逐 slice 建 issue 與 dependency。
 
-#### 7.1 確保必要 labels 存在
+理由：即使 slice 數量不多，每個 `gh issue create` / `gh api` 的 tool result 仍會在主 context 留下 issue URL / 編號等雜訊，主 agent 後續還要回報使用者與處理 follow-up，把這段外包能保住主 context 的品質。Sub-agent 最後只回傳「slice → issue 編號」對應表與 fallback 狀況。
 
-掃描既有 labels；缺的先建：
-
-```bash
-gh label list --json name --jq '.[].name'
-```
-
-必要 labels：
-
-| Label | 顏色建議 | 用途 |
-|-------|---------|------|
-| `slice` | `#0E8A16` | Parent issue 專用 |
-| `slice-NN` | `#C2E0C6` | 分組 ID（每個 slice 一個） |
-| `layer:contract` | `#FBCA04` | 合約/schema |
-| `layer:be` | `#1D76DB` | 純後端 |
-| `layer:fe` | `#D93F0B` | 純前端 |
-| `layer:integration` | `#5319E7` | 串接 E2E |
-| `type:HITL` | `#B60205` | 需人為決策 |
-| `type:AFK` | `#0E8A16` | 可獨立推進 |
-
-#### 7.2 建立 parent issue（每個 slice 一次）
-
-使用 `references/ticket-templates.md` 的 **Parent Slice Template**，以 HEREDOC 傳 body：
-
-```bash
-gh issue create \
-  --title "[slice] <slice 標題>" \
-  --label "slice,slice-01,type:AFK" \
-  --body "$(cat <<'EOF'
-<填入 Parent Slice Template>
-EOF
-)"
-```
-
-記下回傳的 issue 編號（例如 `#101`）。
-
-#### 7.3 建立 contract sub-issue（若需要）
-
-```bash
-gh issue create \
-  --title "[slice-01][contract] <描述>" \
-  --label "slice-01,layer:contract,type:HITL" \
-  --body "..."
-```
-
-記下編號（例如 `#102`），並**掛載為 parent 的 sub-issue**（見 7.6）。
-
-#### 7.4 建立 BE / FE sub-issues（可平行）
-
-填入 body 時，若有 contract，在 `Blocked by` 欄位寫 `#102`。
-
-```bash
-gh issue create --title "[slice-01][be] ..." --label "slice-01,layer:be,type:AFK" --body "..."
-gh issue create --title "[slice-01][fe] ..." --label "slice-01,layer:fe,type:AFK" --body "..."
-```
-
-#### 7.5 建立 integration sub-issue（若需要）
-
-`Blocked by` 同時列出同 slice 的 BE + FE 編號。
-
-```bash
-gh issue create --title "[slice-01][integration] ..." --label "slice-01,layer:integration,type:AFK" --body "..."
-```
-
-#### 7.6 掛載 sub-issue 關聯
-
-GitHub sub-issue API 需要的是 issue 的**內部 ID**（不是 issue number），步驟如下：
-
-```bash
-# 拿 sub-issue 的內部 id
-SUB_ID=$(gh api /repos/:owner/:repo/issues/<sub_number> --jq '.id')
-
-# 把它掛到 parent 底下
-gh api -X POST /repos/:owner/:repo/issues/<parent_number>/sub_issues \
-  -f sub_issue_id=$SUB_ID
-```
-
-對同 slice 的每個 sub-issue 都做一次。
-
-> 若 `gh api` 回 `404` 或 `sub_issues` 不支援，代表 repo 尚未啟用 sub-issues beta。此時退回：在 parent body 的 task list 中以 `- [ ] #<num>` 形式手動列出所有 sub-issue，GitHub 仍會顯示進度。
+> 若 slice 數量 > 10，先回頭檢視 PRD 是否過大、該拆成多個 PRD，再決定是否進此步驟。
 
 ---
 
@@ -206,9 +118,9 @@ gh api -X POST /repos/:owner/:repo/issues/<parent_number>/sub_issues \
 建立完成後，回報：
 
 - Parent PRD issue 編號
-- 所有 slice parent 編號與標題列表
-- 每個 slice 的 sub-issue 樹狀結構（parent → contract → be/fe → integration）
-- **下一步建議**：contract tickets 優先認領並凍結合約
+- 所有 slice 的 issue 編號與標題列表
+- 跨 slice 的 dependency 關係
+- **下一步建議**：哪些 slice 可立即認領（無 blocker 的 AFK slice）
 
 **不要**關閉或改動 parent PRD issue。
 
@@ -220,12 +132,12 @@ Agent 傾向於以下理由跳過步驟，但這些理由都不成立：
 
 | 藉口 | 反駁 |
 |------|------|
-| 「這個 slice 很小，一張 ticket 就好，不拆 FE/BE。」 | 團隊不是 full-stack，一張票不能要求一個人跨層。再小也要拆，不然只有一個人做得了。 |
-| 「這個 API 合約很簡單，不用 contract ticket。」 | 合約先行的目的不是「合約很複雜」，而是「讓 FE/BE 能平行開工」。只要有 FE+BE，就要有合約時刻。 |
-| 「FE 可以等 BE 做完再開工，不用 mock。」 | 這會讓非 full-stack 團隊的排程互鎖。合約凍結後雙方應能平行，FE 用 mock 就是要破這個鎖。 |
-| 「integration ticket 沒什麼工作量，合併進 FE 或 BE 就好。」 | 串接失敗通常不歸任一側單獨負責，獨立 ticket 才能釐清問題歸屬與驗收。 |
-| 「使用者沒要求守門檢查，跳過步驟 6。」 | 守門是預設行為，不需使用者每次指定。跳過會產出跨層票，事後要重拆成本更高。 |
-| 「gh sub-issues API 要多打幾次，直接寫 task list 就好。」 | sub-issue 有原生進度條和雙向連結，task list 沒有。repo 支援時就用原生的。 |
+| 「使用者沒要求守門檢查，跳過步驟 6。」 | 守門是預設行為，不需使用者每次指定。跳過會產出無法 demo 的厚 slice 或依賴環，事後重切成本更高。 |
+| 「Dependencies API 要多打幾次，直接在 body 寫 `## Blocked by` 就好。」 | 原生 Dependencies 有 UI 區塊、blocker 進度追蹤與雙向連結，body 裡的 markdown 會跟狀態 rot。repo 支援時就用原生的。 |
+| 「步驟 7 我主 agent 自己跑就好，slice 才幾個。」 | 步驟 7 一律外包給 sub-agent，不論 slice 多寡。`gh` output 會在主 context 留雜訊，影響後續回報與 follow-up 的品質，沒有例外。 |
+| 「這個 slice 其實只是個技術重構，不能 demo 也沒關係。」 | 不能 demo 就不是 vertical slice，會變成「先做 X 才能做 Y」的隱性依賴鏈。重構應該嵌進 vertical slice 內，或拆成可驗證的階段（例如「以新模型重寫某 user flow」可 demo 該 flow 仍正常）。 |
+| 「PRD 還沒收斂完，我邊拆邊想就好。」 | PRD 沒定型不應進此 skill，先用 `roast-engineer` / `idea-to-prd` 收斂，避免 ticket 建好後還要大改。 |
+| 「body 裡寫『85.3 接手』讓讀者知道範圍由誰接，比 Dependencies UI 清楚。」 | 草擬 body 時 slice 的 issue number 還不存在，無法產出 `#N` auto-link；`85.3` 只是純文字不會 cross-link。建完票後也不會回頭替換，會隨 scope 調整 rot。關聯訊息放 Dependencies UI，body 內如需聲明 out of scope，只寫「由另一張 slice 負責」這類無指向句。 |
 
 ---
 
@@ -233,11 +145,16 @@ Agent 傾向於以下理由跳過步驟，但這些理由都不成立：
 
 出現以下跡象時，應立即暫停並重新評估：
 
-- 使用者描述的 slice 一張票需要同時改 DB 又改 UI → 粒度過粗，再切
 - 兩個 slice 互相 `Blocked by` 對方 → 依賴環，重新排列
-- 某個 slice 完成後無法獨立 demo → 不是 vertical slice，重新設計
-- 某個 sub-issue 的驗收條件需要依賴另一層才能驗證 → 違反「單層獨立驗證」原則
-- slice 數量 > 10 個 → 考慮是否該 PRD 本身應拆成多個 PRD
+- slice 無法獨立 demo、或用「先做 A 再做 B」的層級語言描述、或標題出現「重構/整理/優化」這類無 demo 動詞 → 都不是 vertical slice，改嵌進有 demo 的 slice 或重新設計
+- slice 數量 > 10 → 考慮是否該 PRD 本身應拆成多個 PRD
+- 同一張 slice 同時改超過 3 個獨立模組 → 粒度過粗，再切
+
+---
+
+## 風險控制
+
+執行中若出現想跳過步驟的念頭，或 slice 設計有可疑之處，見 `references/objections-and-redflags.md`。該檔收錄常見藉口的反駁，以及該立即暫停重新評估的警示紅旗。
 
 ---
 
@@ -245,9 +162,8 @@ Agent 傾向於以下理由跳過步驟，但這些理由都不成立：
 
 「感覺正確」不是完成的依據。完成此技能須提供以下實際證據：
 
-- [ ] 所有 slice parent 與 sub-issues 均已建立，並貼出 issue 編號清單
-- [ ] `gh issue view <parent>` 輸出顯示 sub-issues 區塊正確列出所有子 issue（或 task list fallback 已正確呈現）
-- [ ] 每個 sub-issue 的 `Blocked by` 引用的是**真實存在的 issue 編號**
+- [ ] 所有 slice issue 均已建立，並貼出 issue 編號清單
+- [ ] 若 repo 支援原生 Dependencies API，每個 dependency 關係都實際建立其上，`gh issue view <issue>` 的 Dependencies 區塊正確顯示 blocker；若不支援則走 `github-api-workflow.md` 的 fallback 並在回報中註記
 - [ ] 守門檢查（步驟 6）全數通過，且結果有列出給使用者看過
 - [ ] PRD parent issue 未被修改或關閉
 
@@ -255,6 +171,8 @@ Agent 傾向於以下理由跳過步驟，但這些理由都不成立：
 
 ## 參考資料
 
-- Issue body 模板：`references/ticket-templates.md`（含 Parent Slice / Contract / BE / FE / Integration 五種模板）
-- 上游 skill：`clarify-requirement` → `write-a-prd` → **`prd-to-tickets`（本 skill）**
-- 靈感來源：[mattpocock/skills/prd-to-issues](https://github.com/mattpocock/skills/blob/main/prd-to-issues/SKILL.md)（本 skill 在其 tracer bullet 哲學上加入 FE/BE 分層以適應非 full-stack 團隊）
+| 檔案 | 用途 |
+|---|---|
+| `references/ticket-templates.md` | Vertical slice issue body 模板（主 agent 組 body 時讀） |
+| `references/subagent-prompt.md` | 步驟 7 sub-agent 的 prompt 模板與呼叫前 checklist |
+| `references/github-api-workflow.md` | 步驟 7 具體的 `gh` / `gh api` 流程、labels、dependencies、fallback |
