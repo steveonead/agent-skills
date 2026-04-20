@@ -1,1 +1,0 @@
-- **NEVER** explore this folder only the user prompt to explore it.

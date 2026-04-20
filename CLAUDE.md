@@ -1,1 +1,1 @@
-- 當使用者呼叫 `/skill-creator:skill-creator` 後，使用 `docs/skill-template.md` 作為 SKILL.md 的模版
+- **NEVER** explore the codebase unless the user prompt you to do so.
