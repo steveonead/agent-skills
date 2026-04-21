@@ -85,11 +85,9 @@ docs/verify
 
 ---
 
-## Skills 分階段說明
+## Skills 個別說明
 
-### Define — 釐清需求
-
-#### [`ito-grill`](.claude/skills/ito-grill/SKILL.md)
+### 1. 釐清需求 - [`ito-grill`](.claude/skills/ito-grill/SKILL.md)
 
 **做什麼**
 - 依決策樹逐分支追問，與使用者達成共識
@@ -99,7 +97,7 @@ docs/verify
 - 使用者說「我想討論」、「幫我釐清」
 - 需求模糊、需要壓力測試計畫或驗證假設
 
-#### [`ito-prd`](.claude/skills/ito-prd/SKILL.md)
+### 2. 產生 PRD - [`ito-prd`](.claude/skills/ito-prd/SKILL.md)
 
 **做什麼**
 - 逐題訪談收斂為結構化 PRD，包含 User Stories、AC、Out of Scope、已知侷限
@@ -110,9 +108,7 @@ docs/verify
 - 使用者說「寫 PRD」、「整理需求」、「開需求 issue」
 - 使用者說「編輯 issue 的 PRD」
 
-### Plan — 規劃任務
-
-#### [`ito-issues`](.claude/skills/ito-issues/SKILL.md)
+### 跟據 PRD 拆任務 - [`ito-issues`](.claude/skills/ito-issues/SKILL.md)
 
 **做什麼**
 - 讀取 PRD issue，以 read-only 方式探索 codebase
@@ -124,9 +120,7 @@ docs/verify
 - 使用者說「把 PRD 拆成 task」、「建 sub-issue」
 - `ito-prd` 完成後接著拆 task
 
-### Build — 實作功能或修 Bug
-
-#### [`ito-tdd`](.claude/skills/ito-tdd/SKILL.md)
+### 3. 執行 TDD - [`ito-tdd`](.claude/skills/ito-tdd/SKILL.md)
 
 **做什麼**
 - 須先完成 Planning（interface、behaviors、priority）並取得批准
@@ -137,9 +131,7 @@ docs/verify
 - 使用者明確要求「TDD」、「先寫測試」、「紅綠重構」、「Prove-It」
 - 需要測試先行的情境
 
-### Verify — UI 整合驗收
-
-#### [`ito-browser-verify`](.claude/skills/ito-browser-verify/SKILL.md)
+### 4. 驗證 UI/UX - [`ito-browser-verify`](.claude/skills/ito-browser-verify/SKILL.md)
 
 **做什麼**
 - 依驗收標準（GitHub issue、local markdown 或對話提供）產出 Planning 並取得批准
@@ -151,9 +143,7 @@ docs/verify
 - 使用者要求「做 UI 驗證」、「驗收 PRD 或 issue」
 - 使用者說「用瀏覽器驗剛完成的功能」
 
-### Ship — 整理送出
-
-#### [`ito-commit`](.claude/skills/ito-commit/SKILL.md)
+### 5. Git Commit 分組 - [`ito-commit`](.claude/skills/ito-commit/SKILL.md)
 
 **做什麼**
 - 讀取 `git diff` 與 `git log`，自動偵測 commit message 語言
@@ -165,9 +155,7 @@ docs/verify
 - 整理工作區多個性質不同的改動
 - 小幅改動想快速提交
 
-### Meta — Skill 本身的建立與審查
-
-#### [`ito-create-skill`](.claude/skills/ito-create-skill/SKILL.md)
+### 6. 建立新 SKILL - [`ito-create-skill`](.claude/skills/ito-create-skill/SKILL.md)
 
 **做什麼**
 - 依 agentskills.io 規範建立新 skill，含 metadata 驗證、目錄結構、progressive disclosure
