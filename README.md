@@ -117,7 +117,7 @@ flowchart LR
 
 | Skill | 做什麼 | 使用時機 |
 |---|---|---|
-| [`ito-commit`](.claude/skills/ito-commit/SKILL.md) | 讀取 `git diff` 與 `git log`、自動偵測 commit message 語言、依語意分組產出 Conventional Commits 計畫；使用者 A／B 確認後依序執行，`--fast` 旗標可將改動合併為單一 commit；不執行 `git push`、不使用 `git add -A` | 整理工作區多個性質不同的改動，或小幅改動想快速提交 |
+| [`ito-commit`](.claude/skills/ito-commit/SKILL.md) | 讀取 `git diff` 與 `git log`、自動偵測 commit message 語言、依語意分組產出 Conventional Commits 計畫；使用者 A／B 確認後依序執行，`--fast` 標記可將改動合併為單一 commit；不執行 `git push`、不使用 `git add -A` | 整理工作區多個性質不同的改動，或小幅改動想快速提交 |
 
 ### Meta — Skill 本身的建立與審查
 
