@@ -55,30 +55,14 @@ docs/verify
 
 ## 開發生命週期
 
-```mermaid
-flowchart LR
-    subgraph Define
-        grill["ito-grill"]
-        prd["ito-prd"]
-    end
-    subgraph Plan
-        issues["ito-issues"]
-    end
-    subgraph Build
-        tdd["ito-tdd"]
-    end
-    subgraph Verify
-        verify["ito-browser-verify"]
-    end
-    subgraph Ship
-        commit["ito-commit"]
-    end
-    grill --> prd
-    prd --> issues
-    issues --> tdd
-    tdd --> verify
-    verify --> commit
-    verify -. "Fail：Prove-It Spec" .-> tdd
+```
+┌─ Define ──────────────┐   ┌─ Plan ────┐   ┌─ Build ─┐   ┌─ Verify ──────────┐   ┌─ Ship ────┐
+│ ito-grill ─▶ ito-prd  │─▶ │ito-issues │─▶ │ ito-tdd │─▶ │ito-browser-verify │─▶ │ito-commit │
+└───────────────────────┘   └───────────┘   └─────────┘   └───────────────────┘   └───────────┘
+                                                 ▲                  │
+                                                 │                  │
+                                                 └── Fail：Prove-It ┘
+                                                         Spec
 ```
 
 另有 Meta skill `ito-create-skill`，橫跨所有階段，供建立與審查 skill 本身。
@@ -105,40 +89,93 @@ flowchart LR
 
 ### Define — 釐清需求
 
-| Skill | 做什麼 | 使用時機 |
-|---|---|---|
-| [`ito-grill`](.claude/skills/ito-grill/SKILL.md) | 依決策樹逐分支追問，與使用者達成共識；收斂後可選擇將摘要存至 `docs/idea/` | 使用者說「我想討論」、「幫我釐清」，需求模糊、需要壓力測試計畫或驗證假設時 |
-| [`ito-prd`](.claude/skills/ito-prd/SKILL.md) | 逐題訪談收斂為結構化 PRD（User Stories、AC、Out of Scope、已知侷限），支援新增與編輯模式，最後存至 `docs/prd/` 或建立 gh issue（帶 `PRD` label 與 `[PRD-{編號}]` 前綴） | 使用者說「寫 PRD」、「整理需求」、「開需求 issue」、「編輯 issue 的 PRD」 |
+#### [`ito-grill`](.claude/skills/ito-grill/SKILL.md)
+
+**做什麼**
+- 依決策樹逐分支追問，與使用者達成共識
+- 收斂後可選擇將摘要存至 `docs/idea/`
+
+**使用時機**
+- 使用者說「我想討論」、「幫我釐清」
+- 需求模糊、需要壓力測試計畫或驗證假設
+
+#### [`ito-prd`](.claude/skills/ito-prd/SKILL.md)
+
+**做什麼**
+- 逐題訪談收斂為結構化 PRD，包含 User Stories、AC、Out of Scope、已知侷限
+- 支援新增與編輯兩種模式
+- 最後存至 `docs/prd/`，或建立 gh issue（帶 `PRD` label 與 `[PRD-{編號}]` 前綴）
+
+**使用時機**
+- 使用者說「寫 PRD」、「整理需求」、「開需求 issue」
+- 使用者說「編輯 issue 的 PRD」
 
 ### Plan — 規劃任務
 
-| Skill | 做什麼 | 使用時機 |
-|---|---|---|
-| [`ito-issues`](.claude/skills/ito-issues/SKILL.md) | 讀取 PRD issue、以 read-only 方式探索 codebase，切分 vertical slice sub-issues，並以 GitHub 原生 sub-issue 與 Blocked by 建立依賴；title 格式為 `[PRD-<parent>/<index>]` | 使用者說「把 PRD 拆成 task」、「建 sub-issue」，或 `ito-prd` 完成後接著拆 task |
+#### [`ito-issues`](.claude/skills/ito-issues/SKILL.md)
+
+**做什麼**
+- 讀取 PRD issue，以 read-only 方式探索 codebase
+- 切分 vertical slice sub-issues
+- 以 GitHub 原生 sub-issue 與 Blocked by 建立依賴
+- Title 格式為 `[PRD-<parent>/<index>]`
+
+**使用時機**
+- 使用者說「把 PRD 拆成 task」、「建 sub-issue」
+- `ito-prd` 完成後接著拆 task
 
 ### Build — 實作功能或修 Bug
 
-| Skill | 做什麼 | 使用時機 |
-|---|---|---|
-| [`ito-tdd`](.claude/skills/ito-tdd/SKILL.md) | 須先完成 Planning（interface、behaviors、priority）並取得批准，再以 tracer bullet 逐條執行 RED → GREEN → REFACTOR；修 bug 時採用 Prove-It 變體，先撰寫能重現問題的 failing test，再修改程式碼 | 使用者明確要求「TDD」、「先寫測試」、「紅綠重構」、「Prove-It」或測試先行 |
+#### [`ito-tdd`](.claude/skills/ito-tdd/SKILL.md)
+
+**做什麼**
+- 須先完成 Planning（interface、behaviors、priority）並取得批准
+- 以 tracer bullet 逐條執行 RED → GREEN → REFACTOR
+- 修 bug 時採用 Prove-It 變體：先撰寫能重現問題的 failing test，再修改程式碼
+
+**使用時機**
+- 使用者明確要求「TDD」、「先寫測試」、「紅綠重構」、「Prove-It」
+- 需要測試先行的情境
 
 ### Verify — UI 整合驗收
 
-| Skill | 做什麼 | 使用時機 |
-|---|---|---|
-| [`ito-browser-verify`](.claude/skills/ito-browser-verify/SKILL.md) | 依驗收標準（GitHub issue、local markdown 或對話提供）產出 Planning 並取得批准後，透過 `/playwriter` 或其他瀏覽器工具逐條驗證；失敗項目收集 evidence 並產出 Prove-It Reproduction Spec，最終寫入 `docs/verify/[slug]-[timestamp].md` | 使用者要求「做 UI 驗證」、「驗收 PRD 或 issue」、「用瀏覽器驗剛完成的功能」 |
+#### [`ito-browser-verify`](.claude/skills/ito-browser-verify/SKILL.md)
+
+**做什麼**
+- 依驗收標準（GitHub issue、local markdown 或對話提供）產出 Planning 並取得批准
+- 透過 `/playwriter` 或其他瀏覽器工具逐條驗證
+- 失敗項目收集 evidence 並產出 Prove-It Reproduction Spec
+- 最終寫入 `docs/verify/[slug]-[timestamp].md`
+
+**使用時機**
+- 使用者要求「做 UI 驗證」、「驗收 PRD 或 issue」
+- 使用者說「用瀏覽器驗剛完成的功能」
 
 ### Ship — 整理送出
 
-| Skill | 做什麼 | 使用時機 |
-|---|---|---|
-| [`ito-commit`](.claude/skills/ito-commit/SKILL.md) | 讀取 `git diff` 與 `git log`、自動偵測 commit message 語言、依語意分組產出 Conventional Commits 計畫；使用者 A／B 確認後依序執行，`--fast` 標記可將改動合併為單一 commit；不執行 `git push`、不使用 `git add -A` | 整理工作區多個性質不同的改動，或小幅改動想快速提交 |
+#### [`ito-commit`](.claude/skills/ito-commit/SKILL.md)
+
+**做什麼**
+- 讀取 `git diff` 與 `git log`，自動偵測 commit message 語言
+- 依語意分組產出 Conventional Commits 計畫
+- 使用者 A／B 確認後依序執行；`--fast` 標記可將改動合併為單一 commit
+- 不執行 `git push`、不使用 `git add -A`
+
+**使用時機**
+- 整理工作區多個性質不同的改動
+- 小幅改動想快速提交
 
 ### Meta — Skill 本身的建立與審查
 
-| Skill | 做什麼 | 使用時機 |
-|---|---|---|
-| [`ito-create-skill`](.claude/skills/ito-create-skill/SKILL.md) | 依 agentskills.io 規範建立新 skill（metadata 驗證、目錄結構、progressive disclosure）或審查既有 skill（依 rubric 產出含嚴重度標註的 inline findings 報告） | 需要建立新 skill、審查既有 skill 合規與設計邏輯 |
+#### [`ito-create-skill`](.claude/skills/ito-create-skill/SKILL.md)
+
+**做什麼**
+- 依 agentskills.io 規範建立新 skill，含 metadata 驗證、目錄結構、progressive disclosure
+- 審查既有 skill，依 rubric 產出含嚴重度標註的 inline findings 報告
+
+**使用時機**
+- 需要建立新 skill
+- 需要審查既有 skill 的合規與設計邏輯
 
 ---
 
@@ -146,13 +183,9 @@ flowchart LR
 
 ### 線性流程
 
-```mermaid
-flowchart LR
-    grill["ito-grill<br/>（釐清）"] --> prd["ito-prd<br/>（PRD）"]
-    prd --> issues["ito-issues<br/>（拆 task）"]
-    issues --> tdd["ito-tdd<br/>（實作）"]
-    tdd --> verify["ito-browser-verify<br/>（UI 驗收）"]
-    verify --> commit["ito-commit<br/>（送出）"]
+```
+ito-grill ──▶ ito-prd ──▶ ito-issues ──▶ ito-tdd ──▶ ito-browser-verify ──▶ ito-commit
+ (釐清)        (PRD)       (拆 task)      (實作)        (UI 驗收)             (送出)
 ```
 
 各 skill 的 SKILL.md 已內建主動接手規則：
@@ -162,9 +195,9 @@ flowchart LR
 
 ### 非線性回饋
 
-```mermaid
-flowchart LR
-    verify["ito-browser-verify<br/>（Fail 報告）"] -- "Prove-It Spec" --> tdd["ito-tdd<br/>（Prove-It 變體）"]
+```
+ito-browser-verify ──── Prove-It Spec ──▶ ito-tdd
+ (Fail 報告)                                (Prove-It 變體)
 ```
 
 `ito-browser-verify` 產出的報告會在失敗項目附上「失敗操作序列 + failure signature + URL/user/state context + 相關 API response 或 DOM 節點」，可直接作為 `ito-tdd` Prove-It 變體的 failing test 起點，形成驗證與修復的完整循環。
