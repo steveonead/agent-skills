@@ -1,6 +1,21 @@
-# Ito Agent Skills
+# ITO Agent Skills
 
-> 以繁體中文（台灣用語）撰寫的 Claude Code skill 套件，貫穿「需求討論 → PRD → 拆 task → 實作 → UI 驗收 → 送出 commit」的完整開發生命週期。
+## 快速安裝
+
+透過 [`npx skills`](https://github.com/vercel-labs/skills)（Open Agent Skills CLI）可將本 repo 的 skill 安裝到其他專案或使用者全域：
+
+```bash
+# 互動式新增：挑選要安裝的 skill
+npx skills add steveonead/agent-skills
+
+# 互動式更新：從來源 repo 重新拉取已安裝的 skill
+npx skills update
+
+# 互動式刪除：從已安裝的 skill 中選擇要移除的項目
+npx skills remove
+```
+
+更多參數請見 [vercel-labs/skills](https://github.com/vercel-labs/skills) 文件。
 
 ---
 
