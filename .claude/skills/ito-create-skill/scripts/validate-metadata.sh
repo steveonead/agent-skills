@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# Validates skill metadata against agentskills.io rules.
-# Exits 0 on success (stdout), 1 on failure (stderr, one error per line).
-# Usage: validate-metadata.sh --name NAME --description DESC
+# 依 agentskills.io 規則驗證 skill metadata。
+# 成功時以 0 結束（stdout），失敗時以 1 結束（stderr，每行一條錯誤）。
+# 用法：validate-metadata.sh --name NAME --description DESC
 #
-# Values are read from argv, so quotes/backticks/$() inside NAME or DESC
-# are treated as literal characters (no shell re-evaluation).
+# 數值從 argv 讀取，因此 NAME 或 DESC 中的引號／反引號／$() 會被視為
+# 字面字元（不會被 shell 再次求值）。
 #
-# Description length caps (measured in Unicode characters, not bytes):
-#   - Contains any Han character (zh-TW / zh-CN / Japanese kanji): 200
-#   - Otherwise: 1024 (agentskills.io spec)
-# Requires: bash, tr, perl (perl is preinstalled on macOS / most Linux).
+# Description 長度上限（以 Unicode 字元計，不是位元組）：
+#   - 含任一漢字（zh-TW／zh-CN／日文漢字）：200
+#   - 其他情況：1024（agentskills.io 規範）
+# 需求：bash、tr、perl（perl 在 macOS／大多數 Linux 已預先安裝）。
 
 set -u
 
@@ -59,8 +59,8 @@ if ! [[ "$name" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
   errors+=("NAME ERROR: '$name' contains invalid characters. Use only lowercase letters, numbers, and single hyphens. No consecutive hyphens, and cannot start/end with a hyphen.")
 fi
 
-# Character count + Han-presence detection via perl (handles UTF-8 correctly
-# regardless of the caller's locale, and uses \p{Han} for CJK classification).
+# 透過 perl 計算字元數並偵測是否含漢字（正確處理 UTF-8，
+# 不受呼叫端 locale 影響，並使用 \p{Han} 做 CJK 分類）。
 desc_meta=$(perl -CSA -e '
   my $d = $ARGV[0] // "";
   my $n = length($d);
