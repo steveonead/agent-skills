@@ -1,3 +1,5 @@
 .DS_Store
 docs/prd
 docs/idea
+docs/explain
+settings.local.json
