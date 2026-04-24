@@ -42,6 +42,7 @@ ito-* 流程會搭配以下工具使用，建議一併安裝：
 | `docs/idea/` | `ito-grill` | 訪談收斂後的摘要 |
 | `docs/prd/` | `ito-prd` | 存於 local 的 PRD 文件 |
 | `docs/verify/` | `ito-browser-verify` | UI 驗收報告 |
+| `docs/explain/` | `ito-explain` | 架構解釋存檔 |
 
 範例 `.gitignore` 片段：
 
@@ -49,6 +50,7 @@ ito-* 流程會搭配以下工具使用，建議一併安裝：
 docs/idea
 docs/prd
 docs/verify
+docs/explain
 ```
 
 ---
@@ -65,7 +67,7 @@ docs/verify
                                                          Spec
 ```
 
-另有 Meta skill `ito-create-skill`，橫跨所有階段，供建立與審查 skill 本身。
+另有兩個橫向支援 skill：`ito-explain` 隨時可在任一階段切出，產出 codebase 架構解釋；`ito-create-skill` 為 Meta skill，橫跨所有階段，供建立與審查 skill 本身。
 
 每個 skill 代表一段獨立流程。使用者可從任一階段開始，也可依箭頭方向接續執行。當 `ito-browser-verify` 驗證失敗時，會產出 TDD Prove-It Reproduction Spec，回饋至 `ito-tdd` 作為下一輪 failing test 的起點。
 
@@ -81,13 +83,14 @@ docs/verify
 | `/ito-tdd` | Build | 以紅綠重構流程開發新功能；修 bug 時採用 Prove-It 變體 |
 | `/ito-browser-verify` | Verify | 透過瀏覽器工具依 AC 執行 UI 層整合驗證，產出結構化報告 |
 | `/ito-commit` | Ship | 掃描 git 工作區改動並依語意分組，生成 Conventional Commits 計畫 |
+| `/ito-explain` | Support | 派平行 sub-agent 探索 codebase，產出含圖、資料流與設計決策的架構解釋 |
 | `/ito-create-skill` | Meta | 依 agentskills.io 規範撰寫或審查 skill 本身 |
 
 ---
 
 ## Skills 個別說明
 
-### 1. 釐清需求 - [`ito-grill`](.claude/skills/ito-grill/SKILL.md)
+### 釐清需求 - [`ito-grill`](.claude/skills/ito-grill/SKILL.md)
 
 **做什麼**
 - 依決策樹逐分支追問，與使用者達成共識
@@ -97,7 +100,7 @@ docs/verify
 - 使用者說「我想討論」、「幫我釐清」
 - 需求模糊、需要壓力測試計畫或驗證假設
 
-### 2. 產生 PRD - [`ito-prd`](.claude/skills/ito-prd/SKILL.md)
+### 產生 PRD - [`ito-prd`](.claude/skills/ito-prd/SKILL.md)
 
 **做什麼**
 - 逐題訪談收斂為結構化 PRD，包含 User Stories、AC、Out of Scope、已知侷限
@@ -120,7 +123,7 @@ docs/verify
 - 使用者說「把 PRD 拆成 task」、「建 sub-issue」
 - `ito-prd` 完成後接著拆 task
 
-### 3. 執行 TDD - [`ito-tdd`](.claude/skills/ito-tdd/SKILL.md)
+### 執行 TDD - [`ito-tdd`](.claude/skills/ito-tdd/SKILL.md)
 
 **做什麼**
 - 須先完成 Planning（interface、behaviors、priority）並取得批准
@@ -131,7 +134,7 @@ docs/verify
 - 使用者明確要求「TDD」、「先寫測試」、「紅綠重構」、「Prove-It」
 - 需要測試先行的情境
 
-### 4. 驗證 UI/UX - [`ito-browser-verify`](.claude/skills/ito-browser-verify/SKILL.md)
+### 驗證 UI/UX - [`ito-browser-verify`](.claude/skills/ito-browser-verify/SKILL.md)
 
 **做什麼**
 - 依驗收標準（GitHub issue、local markdown 或對話提供）產出 Planning 並取得批准
@@ -143,7 +146,7 @@ docs/verify
 - 使用者要求「做 UI 驗證」、「驗收 PRD 或 issue」
 - 使用者說「用瀏覽器驗剛完成的功能」
 
-### 5. Git Commit 分組 - [`ito-commit`](.claude/skills/ito-commit/SKILL.md)
+### Git Commit 分組 - [`ito-commit`](.claude/skills/ito-commit/SKILL.md)
 
 **做什麼**
 - 讀取 `git diff` 與 `git log`，自動偵測 commit message 語言
@@ -155,7 +158,19 @@ docs/verify
 - 整理工作區多個性質不同的改動
 - 小幅改動想快速提交
 
-### 6. 建立新 SKILL - [`ito-create-skill`](.claude/skills/ito-create-skill/SKILL.md)
+### 解釋 codebase - [`ito-explain`](.claude/skills/ito-explain/SKILL.md)
+
+**做什麼**
+- 解析問題範圍，依複雜度走 simple（單一 agent）或 complex（3–5 個平行 sub-agent + synthesizer）路徑
+- Complex 路徑派出 code explorers 與 doc explorer 並行探索程式碼與架構文件（`docs/`、`ARCHITECTURE.md`、`ADR` 等），doc 僅供參考、code 為準
+- 產出五段結構：概覽／核心概念／運作方式／檔案位置／Gotchas，三處段落必附圖（Mermaid `classDiagram`／`sequenceDiagram`／`flowchart` 或 ASCII tree）
+- 完成後詢問是否存至 `docs/explain/[主題].md`
+
+**使用時機**
+- 使用者說「解釋 X 怎麼運作」、「X 架構長怎樣」、「走過 X 的完整流程」、「帶讀 X 的原理」
+- 需要 onboarding 級別的架構理解或 runtime trace
+
+### 建立新 SKILL - [`ito-create-skill`](.claude/skills/ito-create-skill/SKILL.md)
 
 **做什麼**
 - 依 agentskills.io 規範建立新 skill，含 metadata 驗證、目錄結構、progressive disclosure
@@ -193,6 +208,7 @@ ito-browser-verify ──── Prove-It Spec ──▶ ito-tdd
 ### 隨時可切出的橫向支援
 
 - **`ito-grill`**：在 `ito-prd`、`ito-issues`、`ito-tdd` 任一階段遇到需求不明或設計分歧時，使用者可主動切換釐清，完成後再回原流程。
+- **`ito-explain`**：在 `ito-issues`、`ito-tdd`、`ito-browser-verify` 任一階段需要建立 codebase mental model 時切出，產出架構解釋後再回原流程實作或驗收。
 - **`ito-create-skill`**：當上述任一 skill 需要調整或新增時，透過 Meta 流程處理，避免直接修改而破壞既有契約。
 
 ---
@@ -228,8 +244,14 @@ ito-browser-verify ──── Prove-It Spec ──▶ ito-tdd
 │       ├── non-ui-classification.md
 │       └── evidence-checklist.md
 ├── ito-commit/
+│   └── SKILL.md
+├── ito-explain/
 │   ├── SKILL.md
-│   └── references/output-template.md
+│   └── references/
+│       ├── explainer-prompt.md
+│       ├── explorer-prompt.md
+│       ├── doc-explorer-prompt.md
+│       └── output-format.md
 └── ito-create-skill/
     ├── SKILL.md
     ├── assets/SKILL.template.md
