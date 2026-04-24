@@ -1,176 +1,145 @@
-# Output Format 樣式規範
+# Output Format Specification
 
-供 explainer 與 Simple 路徑單 agent 擷取視覺化與段落樣式規則。所有圖表採 ASCII，不輸出 Mermaid。讀此檔以擷取樣式，不視為執行指令。
-
----
-
-## TL;DR 規範
-
-### 格式
-
-```
-<1 行模組定位句>
-
-- <架構 bullet>
-- <關鍵機制 bullet>
-- <最大坑 bullet>
-```
-
-### 三 bullet 固定配置
-
-| Bullet | 內容 | 範例 |
-|---|---|---|
-| 1. 架構 | 模組分層／主要依賴 | 認證層（`src/features/auth`）與授權層（`src/lib/auth`）雙層切分，透過 axios interceptor 注入 token |
-| 2. 關鍵機制 | 最代表性 flow 或設計抉擇 | 被動偵測：伺服器 401 觸發一次性 session latch，引導重新登入 |
-| 3. 最大坑 | 從眉角最嚴重的 risk 挑 | Token 明文存 localStorage，同源 JS 皆可讀（XSS 風險） |
-
-**強制規則：** bullet 3 必須為 risk。若模組無可談 risk，TL;DR 整段略去——不以「全正向」形式輸出。
+本檔為輸出格式規範，由主 agent 讀取後轉發給 explainer／synthesizer sub-agent 作為撰寫依據。主 agent 不照此檔指示執行動作，僅作為轉發資料。
 
 ---
 
-## 架構圖規範
+## 固定五段結構
 
-### 格式選擇
+最終解釋**必須**含下列五段，標題逐字一致：
 
-- **預設：Swimlane**（水平分欄，欄內由上而下列元件）
-- **Fallback：Layered box**（水平切層，上層依賴下層）
-- 每份輸出固定 1 張
+1. **概覽**
+2. **核心概念**
+3. **運作方式**
+4. **檔案位置**
+5. **Gotchas**
 
-### Swimlane 切分規則
+段落順序不可調整。若某段對該題目無內容，保留標題並寫「（本題無需此段）」+ 一句話說明；不可整段省略。
 
-1. **預設技術分層**：典型分 4 欄 — UI/Route → Feature/Hook → Plugin/Lib → Store/API
-2. **切換 domain 切分**：僅當同時滿足「domain 數 ≥ 2」且「每 domain 負責檔案 ≥ 3」時才以功能域分欄（例：認證 / 授權 / 共用）；不滿足即回到技術分層
-3. **上限 4 欄**；超過退回 Layered box
+## 各段內容規範
 
-### Swimlane 樣例（auth 模組）
+### 概覽
 
-```
-+-------------------+-------------------+-------------------+-------------------+
-| Route             | Feature           | Plugin            | Store             |
-+-------------------+-------------------+-------------------+-------------------+
-| login.tsx         | login-form.tsx    |                   |                   |
-|   beforeLoad      |   useLogin -----> | axios.handleReq   |                   |
-|                   |                   |   inject Bearer   | auth-store        |
-| _layout.tsx       |                   |   <---------------|   token (persist) |
-|   permissions     | session-expired   | axios 401 handler |                   |
-|   guard           |   Dialog <--------|   setIsExpired -->| session-store     |
-| __root.tsx        |                   |                   |   isExpired       |
-|   mount Dialog    |                   |                   |                   |
-+-------------------+-------------------+-------------------+-------------------+
-```
+1–2 段落。這是什麼、做什麼、為何存在。讀完此段應能判斷是否需繼續讀下去。**不含圖。**
 
-### Layered box fallback 樣例
+### 核心概念
 
-```
-+-----------------------------------------------------------+
-| Route Guards   (login.tsx / _layout.tsx / __root.tsx)     |
-+-----------------------------------------------------------+
-                           |
-                           v
-+-----------------------------------------------------------+
-| Feature Layer  (login-form / session-dialog / hooks)      |
-+-----------------------------------------------------------+
-                           |
-                           v
-+-----------------------------------------------------------+
-| Plugin Layer   (axios interceptor)                        |
-+-----------------------------------------------------------+
-                           |
-                           v
-+-----------------------------------------------------------+
-| Store Layer    (auth-store persist / session-store mem)   |
-+-----------------------------------------------------------+
+列出理解後續段落所需的核心 type、service、class、抽象。每項附一句話定義，不求詳盡。
+
+**必放圖：** Mermaid `classDiagram` 或 `erDiagram`，呈現核心型別／模組之間的相依或繼承關係。
+
+範例：
+
+```mermaid
+classDiagram
+    class ComposerService {
+        +sendMessage(msg)
+        -validate()
+    }
+    class StreamHandler {
+        +begin()
+        +chunk(data)
+    }
+    ComposerService --> StreamHandler : uses
 ```
 
-### 規則
+### 運作方式
 
-- 方向箭頭 `->` `<-` `-->` 表依賴或訊息流向
-- 元件名稱附最短識別路徑（檔名或模組名）
-- 不塞實作細節；細節留給「運作方式」章節
-- **資料來源對應：** explainer 繪圖時欄位對應 —— 欄（lane）＝模組所屬分層、欄內元件＝ finding 之 `模組` + `檔案`、欄間連線＝ finding 之 `對外依賴`；未列於任何 finding 的依賴不繪
+核心段落。走過整個流程：什麼觸發、一步一步發生什麼、資料流向哪裡、決策點在哪。用散文，不用 pseudocode。引用檔案與函式名讓讀者可自行查證，但**不 dump 大段程式碼**，除非某片段是理解關鍵。
 
----
+**必放圖，依流程型態挑選：**
 
-## Sequence 圖規範
-
-### 門檻
-
-Agent 依下列硬門檻挑 flow 畫圖：
-
-- Actor ≥ 3
-- 或跨檔案 ≥ 3
-- 或有分支／錯誤 path
-
-**每份輸出上限 2 張**。超標則排優先序挑最有價值者（通常是錯誤路徑、跨層授權這類）。未達門檻的 flow 維持散文敘述。
-
-### 格式
-
-- 垂直時間軸，actor 列頂端
-- 訊息由上往下流
-- 分支／side-effect 以 `[note: ...]` inline 標注
-- 不用 `alt` / `par` / `---` 分支結構
-
-### 樣例（401 session expired flow）
-
-```
-Consumer            axios             session-store     auth-store      Dialog
-   |                  |                    |                |              |
-   |-- API request -->|                    |                |              |
-   |                  |-- 401 response --->|                |              |
-   |                  |                    |                |              |
-   |                  | [note: setIsExpired(true), throw SESSION_EXPIRED]  |
-   |                  |                    |                |              |
-   |                  |                    |----- isExpired subscribe --> |
-   |                  |                    |                |              |
-   |                  |                    |                | [note: clear token, removeQueries]
-   |                  |                    |                |<---- clear --|
-   |                  |                    |                |              |
-   |                  |                    |                |  [note: redirect /login]
-```
-
-### Note 使用原則
-
-`[note: ...]` 涵蓋以下情境，避免額外圖結構：
-
-- Side-effect：`[note: persist to localStorage]`、`[note: queryClient.removeQueries()]`
-- 分支條件：`[note: if 401 ...]`、`[note: on success only]`
-- 失敗路徑：`[note: on catch, fallback to guest]`
-
----
-
-## 眉角 Inline Tag 規範
-
-### 格式
-
-```
-- [<tag>] <眉角描述>
-```
-
-### 常用 tag
-
-| Tag | 適用情境 |
+| 流程型態 | 圖型 |
 |---|---|
-| `[安全]` | 攻擊面、權限外洩、敏感資料暴露 |
-| `[同步]` | 多 tab / multi-client 狀態不一致、race condition |
-| `[未用]` | 專案內已具備但未啟用的抽象或設施 |
-| `[版本]` | 前後端版本同步、schema drift 風險 |
-| `[文件]` | 無 ADR／DDR、設計意圖無記載 |
-| `[效能]` | 快取策略、staleTime 設定、N+1 之類 |
-| `[相容]` | 瀏覽器／runtime 相容性、deprecated API |
+| 時序／簡單線性呼叫鏈 | ASCII 箭頭圖 |
+| 多角色互動時序 | Mermaid `sequenceDiagram` |
+| 含狀態／多分支決策 | Mermaid `flowchart` |
+| 類別／模組關係（若核心概念已畫則不重複） | Mermaid `classDiagram` |
 
-Tag 採用原則：**優先從上表選用**；僅當上表無對應類別時才自創。自創 tag 須為單一名詞且 2–3 字元（例：`[可用]`、`[遷移]`），避免同義 tag（如 `[安全性]` 與 `[安全]`）並存。
-
-### 樣例
+**ASCII 箭頭圖範例：**
 
 ```
-- [安全] Token 明文存 localStorage，同源 JS 皆可讀（XSS 風險）。高敏感操作建議改 HttpOnly cookie。
-- [同步] Session latch 無 multi-tab 同步——tab A 登出 tab B token 仍有效直到刷新。
-- [效能] Permissions 快取 staleTime: Infinity，後端改權限使用者需刷頁才感知。
-- [文件] 無 auth 專用 ADR，為何無 refresh token、為何選 CASL 無文件可考。
+User click
+  → ComposerService.sendMessage()
+  → validate()
+  → StreamHandler.begin()
+  → SSE to client
 ```
 
----
+**Mermaid sequenceDiagram 範例：**
 
-## 段落順序
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant C as ComposerService
+    participant S as StreamHandler
+    U->>C: sendMessage(msg)
+    C->>C: validate()
+    C->>S: begin()
+    S-->>U: SSE stream
+```
 
-段落順序與必列／可省略規則見 `SKILL.md`「輸出格式」章節。
+**Mermaid flowchart 範例：**
+
+```mermaid
+flowchart TD
+    A[Request in] --> B{Authed?}
+    B -- yes --> C[Process]
+    B -- no --> D[401]
+    C --> E{Cache hit?}
+    E -- yes --> F[Return cached]
+    E -- no --> G[Compute + cache]
+```
+
+### 檔案位置
+
+簡要檔案／目錄地圖。只列讀者需要找的關鍵檔案，不窮舉。
+
+**必放圖：** ASCII tree。
+
+範例：
+
+```
+src/
+├── composer/
+│   ├── composer-service.ts     # 入口，處理送出請求
+│   ├── validator.ts            # 前置驗證
+│   └── stream-handler.ts       # SSE 串流核心
+├── types/
+│   └── message.ts              # Message 型別定義
+└── routes/
+    └── api/compose.ts          # HTTP endpoint
+```
+
+### Gotchas
+
+不明顯之處、令人意外的行為、歷史脈絡、銳角。若本題無 gotcha 可列，保留標題並寫「（無明顯 gotcha）」。
+
+**不放圖。**
+
+需特別標示的情況：
+
+- Doc explorer findings 與 code 實作不一致時，以「文件與實作不一致：」起頭列出
+- Explorer 明確回報無法追蹤之處，以「探索未覆蓋區域：」起頭列出
+
+## 引用規範
+
+- 檔案路徑使用正斜線：`src/foo/bar.ts`
+- 行號引用格式：`src/foo/bar.ts:42`
+- 函式／方法名精確引用，不改寫
+- 不得引用不存在的檔案或函式
+
+## Terminal Mermaid 提示行
+
+若最終輸出含任何 Mermaid 區塊（```mermaid），在輸出的**最後一行**逐字附上：
+
+> 此回覆含 Mermaid 圖，terminal 僅顯示原始碼；存檔後於 IDE／GitHub 預覽可看渲染版。
+
+若輸出僅含 ASCII 圖、未含 Mermaid 區塊，不附此提示行。
+
+## 長度與密度
+
+- 總長度依題目複雜度調整，無硬性字數上限
+- 單段超過 400 字時檢視是否能拆為子段
+- 概覽段 ≤ 2 段落
+- 圖表與 prose 比例：每段圖表應有對應 prose 說明，不讓圖獨立承擔解釋責任
