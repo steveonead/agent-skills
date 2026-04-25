@@ -35,22 +35,19 @@ ito-* 流程會搭配以下工具使用，建議一併安裝：
 
 ## 本機輸出與 .gitignore
 
-部分 skill 會在當前專案的 `docs/` 底下產生 markdown 檔案，多屬個人草稿或驗收紀錄，不一定需要進版控。建議依實際需求加入 `.gitignore`：
+部分 skill 會在當前專案的 `docs/ito-temp/` 底下產生 markdown 檔案，多屬個人草稿或驗收紀錄，不一定需要進版控。預設輸出路徑統一收斂在 `docs/ito-temp/` 之下，方便以單條規則 ignore：
 
 | 路徑 | 來源 skill | 用途 |
 |---|---|---|
-| `docs/idea/` | `ito-grill` | 訪談收斂後的摘要 |
-| `docs/prd/` | `ito-prd` | 存於 local 的 PRD 文件 |
-| `docs/verify/` | `ito-browser-verify` | UI 驗收報告 |
-| `docs/explain/` | `ito-explain` | 架構解釋存檔 |
+| `docs/ito-temp/idea/` | `ito-grill` | 訪談收斂後的摘要 |
+| `docs/ito-temp/prd/` | `ito-prd` | 存於 local 的 PRD 文件 |
+| `docs/ito-temp/verify/` | `ito-browser-verify` | UI 驗收報告 |
+| `docs/ito-temp/explain/` | `ito-explain` | 架構解釋存檔 |
 
 範例 `.gitignore` 片段：
 
 ```
-docs/idea
-docs/prd
-docs/verify
-docs/explain
+docs/ito-temp/
 ```
 
 ---
@@ -67,7 +64,7 @@ docs/explain
                                                          Spec
 ```
 
-另有兩個橫向支援 skill：`ito-explain` 隨時可在任一階段切出，產出 codebase 架構解釋；`ito-create-skill` 為 Meta skill，橫跨所有階段，供建立與審查 skill 本身。
+另有三個橫向支援 skill：`ito-explain` 隨時可在任一階段切出，產出 codebase 架構解釋；`ito-search` 提供外部資訊查詢工具組（lib 文件、GitHub repo 內部運作、社群討論等）；`ito-create-skill` 為 Meta skill，橫跨所有階段，供建立與審查 skill 本身。
 
 每個 skill 代表一段獨立流程。使用者可從任一階段開始，也可依箭頭方向接續執行。當 `ito-browser-verify` 驗證失敗時，會產出 TDD Prove-It Reproduction Spec，回饋至 `ito-tdd` 作為下一輪 failing test 的起點。
 
@@ -84,6 +81,7 @@ docs/explain
 | `/ito-browser-verify` | Verify | 透過瀏覽器工具依 AC 執行 UI 層整合驗證，產出結構化報告 |
 | `/ito-commit` | Ship | 掃描 git 工作區改動並依語意分組，生成 Conventional Commits 計畫 |
 | `/ito-explain` | Support | 派平行 sub-agent 探索 codebase，產出含圖、資料流與設計決策的架構解釋 |
+| `/ito-search` | Support | 提供 ctx7／deepwiki／exa／gh 等外部搜尋工具組，由 agent 依 query 自選並過濾劣質網域 |
 | `/ito-create-skill` | Meta | 依 agentskills.io 規範撰寫或審查 skill 本身 |
 
 ---
@@ -94,7 +92,7 @@ docs/explain
 
 **做什麼**
 - 依決策樹逐分支追問，與使用者達成共識
-- 收斂後可選擇將摘要存至 `docs/idea/`
+- 收斂後可選擇將摘要存至 `docs/ito-temp/idea/`
 
 **使用時機**
 - 使用者說「我想討論」、「幫我釐清」
@@ -105,7 +103,7 @@ docs/explain
 **做什麼**
 - 逐題訪談收斂為結構化 PRD，包含 User Stories、AC、Out of Scope、已知侷限
 - 支援新增與編輯兩種模式
-- 最後存至 `docs/prd/`，或建立 gh issue（帶 `PRD` label 與 `[PRD-{編號}]` 前綴）
+- 最後存至 `docs/ito-temp/prd/`，或建立 gh issue（帶 `PRD` label 與 `[PRD-{編號}]` 前綴）
 
 **使用時機**
 - 使用者說「寫 PRD」、「整理需求」、「開需求 issue」
@@ -140,7 +138,7 @@ docs/explain
 - 依驗收標準（GitHub issue、local markdown 或對話提供）產出 Planning 並取得批准
 - 透過 `/playwriter` 或其他瀏覽器工具逐條驗證
 - 失敗項目收集 evidence 並產出 Prove-It Reproduction Spec
-- 最終寫入 `docs/verify/[slug]-[timestamp].md`
+- 最終寫入 `docs/ito-temp/verify/[slug]-[timestamp].md`
 
 **使用時機**
 - 使用者要求「做 UI 驗證」、「驗收 PRD 或 issue」
@@ -164,11 +162,24 @@ docs/explain
 - 解析問題範圍，依複雜度走 simple（單一 agent）或 complex（3–5 個平行 sub-agent + synthesizer）路徑
 - Complex 路徑派出 code explorers 與 doc explorer 並行探索程式碼與架構文件（`docs/`、`ARCHITECTURE.md`、`ADR` 等），doc 僅供參考、code 為準
 - 產出五段結構：概覽／核心概念／運作方式／檔案位置／Gotchas，三處段落必附圖（Mermaid `classDiagram`／`sequenceDiagram`／`flowchart` 或 ASCII tree）
-- 完成後詢問是否存至 `docs/explain/[主題].md`
+- 完成後詢問是否存至 `docs/ito-temp/explain/[主題].md`
 
 **使用時機**
 - 使用者說「解釋 X 怎麼運作」、「X 架構長怎樣」、「走過 X 的完整流程」、「帶讀 X 的原理」
 - 需要 onboarding 級別的架構理解或 runtime trace
+
+### 外部搜尋 - [`ito-search`](.claude/skills/ito-search/SKILL.md)
+
+**做什麼**
+- 提供一組外部搜尋工具（`/find-docs`、deepwiki MCP、exa MCP、gh CLI、harness 內建 WebSearch／WebFetch），由 agent 依 query 性質自選或多工具並用
+- 結果經 `references/source-filter.md` 黑名單過濾劣質網域（如 `csdn.net`、`51cto.com`、`tutorialspoint.com`、`w3schools.com` 等）
+- 輸出強制附引用編號 `[1]`、`[2]` 與末段「來源」URL 清單，並標示「使用工具：X」
+- 一次性查詢，不存檔
+
+**使用時機**
+- 使用者明確呼叫 `/ito-search` 或以自然語觸發：「幫我查⋯」「搜尋一下⋯」「找一下⋯」
+- 需查 lib／framework／SDK／CLI 的官方 API、GitHub repo 內部運作、bug 訊息、社群討論、best practice 等外部資訊
+- 不適用於 codebase 搜尋、需直接實作的任務、需長期保留結果的研究
 
 ### 建立新 SKILL - [`ito-create-skill`](.claude/skills/ito-create-skill/SKILL.md)
 
@@ -209,59 +220,8 @@ ito-browser-verify ──── Prove-It Spec ──▶ ito-tdd
 
 - **`ito-grill`**：在 `ito-prd`、`ito-issues`、`ito-tdd` 任一階段遇到需求不明或設計分歧時，使用者可主動切換釐清，完成後再回原流程。
 - **`ito-explain`**：在 `ito-issues`、`ito-tdd`、`ito-browser-verify` 任一階段需要建立 codebase mental model 時切出，產出架構解釋後再回原流程實作或驗收。
+- **`ito-search`**：在任一階段需要外部資訊（lib 官方 API、GitHub repo 內部運作、bug 訊息、社群討論、best practice）時切出，取得附來源 URL 的查詢結果後再回原流程。
 - **`ito-create-skill`**：當上述任一 skill 需要調整或新增時，透過 Meta 流程處理，避免直接修改而破壞既有契約。
-
----
-
-## 專案結構
-
-```
-.claude/skills/
-├── ito-grill/
-│   └── SKILL.md
-├── ito-prd/
-│   ├── SKILL.md
-│   └── assets/prd-template.md
-├── ito-issues/
-│   ├── SKILL.md
-│   └── references/
-│       ├── issue-template.md
-│       ├── vertical-slicing-examples.md
-│       └── re-run-precheck.md
-├── ito-tdd/
-│   ├── SKILL.md
-│   └── references/
-│       ├── interface-design.md
-│       ├── mocking.md
-│       ├── refactoring.md
-│       └── tests.md
-├── ito-browser-verify/
-│   ├── SKILL.md
-│   ├── assets/report-template.md
-│   ├── scripts/make-slug.sh
-│   └── references/
-│       ├── input-resolution.md
-│       ├── non-ui-classification.md
-│       └── evidence-checklist.md
-├── ito-commit/
-│   └── SKILL.md
-├── ito-explain/
-│   ├── SKILL.md
-│   └── references/
-│       ├── explainer-prompt.md
-│       ├── explorer-prompt.md
-│       ├── doc-explorer-prompt.md
-│       └── output-format.md
-└── ito-create-skill/
-    ├── SKILL.md
-    ├── assets/SKILL.template.md
-    ├── scripts/validate-metadata.sh
-    └── references/
-        ├── checklist.md
-        └── review-rubric.md
-```
-
-每個 skill 遵循 progressive disclosure：`SKILL.md` 為進入點與主邏輯，`references/` 存放依需載入的背景資料，`assets/` 存放輸出模板，`scripts/` 存放確定性邏輯工具。
 
 ---
 
