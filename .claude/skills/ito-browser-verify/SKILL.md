@@ -7,7 +7,7 @@ description: 使用連接瀏覽器的工具，依據驗收標準或 PRD 執行 U
 
 ## 概覽
 
-依據使用者提供的驗收標準或 PRD，藉由連接瀏覽器的工具執行 UI 層整合驗證。此 skill 為獨立工具，不綁定既有 ito pipeline，僅負責「執行驗證並產出事實報告」，修復工作交由其他 skill 處理。驗證前強制完成 Planning 並取得使用者批准，結果以結構化 markdown 存至本地 `docs/verify/`。
+依據使用者提供的驗收標準或 PRD，藉由連接瀏覽器的工具執行 UI 層整合驗證。此 skill 為獨立工具，不綁定既有 ito pipeline，僅負責「執行驗證並產出事實報告」，修復工作交由其他 skill 處理。驗證前強制完成 Planning 並取得使用者批准，結果以結構化 markdown 存至本地 `docs/ito-temp/verify/`。
 
 ## 使用時機
 
@@ -67,7 +67,7 @@ description: 使用連接瀏覽器的工具，依據驗收標準或 PRD 執行 U
 1. 讀取 `assets/report-template.md` 以提取報告骨架。
 2. 執行 `scripts/make-slug.sh <topic>`，以驗證目標名稱（PRD 主題或 issue slug）產生檔名 `[slug]-[timestamp].md`。
 3. 依骨架填入 Summary、每條 AC 的狀態與細節、以及所有 Fail 項的 TDD Prove-it Reproduction Spec。
-4. 寫入 `docs/verify/[slug]-[timestamp].md`；若 `docs/verify/` 目錄不存在，先建立目錄。
+4. 寫入 `docs/ito-temp/verify/[slug]-[timestamp].md`；若 `docs/ito-temp/verify/` 目錄不存在，先建立目錄。
 5. 向使用者回報檔案路徑、Pass／Fail／Skipped 統計，不輸出整體通過判定（由使用者自行裁量）。
 
 ## 具體技巧／模式
@@ -120,7 +120,7 @@ description: 使用連接瀏覽器的工具，依據驗收標準或 PRD 執行 U
 - [ ] Planning 已輸出分類結果、逐條 plan、prerequisites 清單，且已取得使用者明確批准。
 - [ ] 所有 UI 可驗證 AC 皆留下 Pass 或 Fail 結果，Fail 項 Evidence 欄位齊備。
 - [ ] 非 UI AC 皆標記為 Skipped 並附跳過原因。
-- [ ] 報告已寫入 `docs/verify/[slug]-[timestamp].md`，檔名透過 `scripts/make-slug.sh` 產生。
+- [ ] 報告已寫入 `docs/ito-temp/verify/[slug]-[timestamp].md`，檔名透過 `scripts/make-slug.sh` 產生。
 - [ ] 報告未出現整體通過判定。
 
 ## 錯誤處理
@@ -130,7 +130,7 @@ description: 使用連接瀏覽器的工具，依據驗收標準或 PRD 執行 U
 - 若 `gh issue view` 回傳非 0 或內容為空，向使用者確認 issue URL 是否正確，或改請使用者直接貼入驗收標準。
 - 若輸入內容無法抽出任何驗收標準，停止流程並向使用者說明「輸入中未偵測到可驗證項目」，不進入 Planning。
 - 若驗證中途使用者撤回 prerequisites（例如 dev server 中斷），停止執行並保留當下已完成 AC 的結果，詢問使用者是否恢復後續流程或直接依目前進度產報告。
-- 若 `docs/verify/` 目錄所在專案並非 git repo，仍正常寫入檔案；僅將此情況於回報訊息中提醒使用者。
+- 若 `docs/ito-temp/verify/` 目錄所在專案並非 git repo，仍正常寫入檔案；僅將此情況於回報訊息中提醒使用者。
 
 ## 延伸參考
 

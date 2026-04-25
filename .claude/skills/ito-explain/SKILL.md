@@ -70,11 +70,11 @@ description: 解釋 codebase 中某功能、子系統或流程如何運作。派
 1. 將最終解釋原樣呈現給使用者。可為語意通順做輕度潤飾，不做結構性改寫。
 2. 若解釋中包含任何 Mermaid 區塊，在解釋結尾附下列提示行（逐字）：
    > 此回覆含 Mermaid 圖，terminal 僅顯示原始碼；存檔後於 IDE／GitHub 預覽可看渲染版。
-3. 呈現後詢問使用者：「要將此解釋存至 `docs/explain/[主題].md` 供日後參考嗎？」
+3. 呈現後詢問使用者：「要將此解釋存至 `docs/ito-temp/explain/[主題].md` 供日後參考嗎？」
 4. 若使用者選擇存檔：
-   - 依原始問題關鍵詞 slugify 自動命名（例：「解釋訊息虛擬化」→ `docs/explain/message-virtualization.md`）
+   - 依原始問題關鍵詞 slugify 自動命名（例：「解釋訊息虛擬化」→ `docs/ito-temp/explain/message-virtualization.md`）
    - 若關鍵詞過於抽象或無法明確 slugify，轉向「錯誤處理」對應條目向使用者確認檔名
-   - 若 `docs/explain/` 不存在，先建立目錄
+   - 若 `docs/ito-temp/explain/` 不存在，先建立目錄
    - 寫檔後回報路徑
 
 ## 具體模式與規範
@@ -127,7 +127,7 @@ description: 解釋 codebase 中某功能、子系統或流程如何運作。派
 - Doc findings 與 code findings 衝突時未在 Gotchas 標示
 - 範圍模糊時向使用者追問而非宣告詮釋
 - 輸出含 Mermaid 區塊但未附 terminal 提示行
-- 使用者選擇存檔但未建立 `docs/explain/` 目錄
+- 使用者選擇存檔但未建立 `docs/ito-temp/explain/` 目錄
 
 ## 驗證
 
@@ -140,7 +140,7 @@ description: 解釋 codebase 中某功能、子系統或流程如何運作。派
 - [ ] 檔案位置段含 ASCII tree
 - [ ] 含 Mermaid 區塊時，輸出結尾含 terminal 提示行
 - [ ] 呈現後主動詢問使用者是否存檔
-- [ ] 若使用者選擇存檔，檔案寫入 `docs/explain/[主題].md` 並回報路徑
+- [ ] 若使用者選擇存檔，檔案寫入 `docs/ito-temp/explain/[主題].md` 並回報路徑
 
 ## 錯誤處理
 

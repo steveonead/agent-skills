@@ -13,7 +13,7 @@ description: 將使用者需求訪談後收斂為結構化 PRD，支援新增與
 
 - 使用者說「寫 PRD」、「整理需求」、「把需求寫成文件」
 - 使用者說「開一個需求 issue」、「把這個 feature 開成 issue」
-- 使用者說「編輯 `docs/prd/xxx.md`」或「改 issue #N 的 PRD」
+- 使用者說「編輯 `docs/ito-temp/prd/xxx.md`」或「改 issue #N 的 PRD」
 - ito-grill 收斂後使用者表示「那來寫 PRD」，主動接手
 
 **不應使用的情況：** 需要直接實作功能、純粹技術架構設計討論、非需求文件的一般筆記、或需求尚未成形需要先發散討論。
@@ -27,7 +27,7 @@ description: 將使用者需求訪談後收斂為結構化 PRD，支援新增與
 | 旗標 | 判斷依據 |
 |------|---------|
 | 新增模式 | Prompt 未提及既有檔案路徑或 issue 編號 |
-| 編輯模式（local） | Prompt 提及 `.md` 檔案路徑（e.g., `docs/prd/xxx.md`、「改 xxx PRD」） |
+| 編輯模式（local） | Prompt 提及 `.md` 檔案路徑（e.g., `docs/ito-temp/prd/xxx.md`、「改 xxx PRD」） |
 | 編輯模式（gh issue） | Prompt 提及 issue 編號（e.g., `#123`、「編輯 issue 45」） |
 
 若來源不明確，追問使用者一次再進入流程。
@@ -83,13 +83,13 @@ description: 將使用者需求訪談後收斂為結構化 PRD，支援新增與
 詢問使用者：
 
 > PRD 已收斂，要存到 local 還是建立 gh issue？
-> - A）存 local（預設 `docs/prd/`，可指定其他路徑）
+> - A）存 local（預設 `docs/ito-temp/prd/`，可指定其他路徑）
 > - B）建立 gh issue（label: `PRD`）
 
 依選擇執行對應分支：
 
 **Local 分支：**
-- 新增：依訪談主題自動命名檔案（e.g., `docs/prd/user-auth-refactor.md`），建立新檔
+- 新增：依訪談主題自動命名檔案（e.g., `docs/ito-temp/prd/user-auth-refactor.md`），建立新檔
 - 編輯：覆蓋原檔案（依賴 git 管版本歷史）
 - 使用者可 override 路徑；若非預設路徑，執行前確認
 - 完成後回報實際寫入的檔案路徑
