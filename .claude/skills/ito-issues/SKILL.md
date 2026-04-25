@@ -1,6 +1,6 @@
 ---
 name: ito-issues
-description: 讀取 GitHub PRD issue，拆分成可獨立 demo 的 vertical slice sub-issues。使用者說「把 PRD 拆成 task」、「建 sub-issue」、「開工作 issue」時使用。不適用於需要直接實作、純技術架構討論、或 PRD 尚未定案的情境。
+description: 以既有 GitHub PRD issue 為輸入，拆分成可獨立 demo 的 vertical slice sub-issues。使用者說「把 PRD 拆成 task」、「建 sub-issue」、「開工作 issue」時使用。不適用於需要直接實作、純技術架構討論、或 PRD 尚未定案的情境。
 ---
 
 # ito-issues

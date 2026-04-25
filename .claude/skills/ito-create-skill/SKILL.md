@@ -1,6 +1,6 @@
 ---
 name: ito-create-skill
-description: 依 agentskills.io 規範撰寫、組織並審查專業級 agent skill。適用於建立新 skill 目錄、撰寫程序化指示、優化 metadata、審查既有 skill 的設計邏輯與文字規範。不適用於一般文件撰寫、非 agent 化的函式庫或 README。
+description: 依 agentskills.io 規範撰寫、組織並審查專業級 agent skill。適用於建立新 skill 目錄、撰寫程序化指示、優化 metadata、審查既有 skill 的敘述清晰度、觸發策略與 metadata 設計。不適用於一般文件撰寫、非 agent 化的函式庫或 README。
 ---
 
 # Skill 撰寫與審查程序
