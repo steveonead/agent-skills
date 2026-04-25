@@ -1,0 +1,5 @@
+{
+  "ignorePaths": [
+    ".claude/skills/ito-search/references/source-filter.md"
+  ]
+}
