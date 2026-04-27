@@ -36,8 +36,6 @@ PRD 讀取後，**必定**執行全面探索：
 3. 相關資料模型、API、元件的現有 pattern
 4. 可能受影響的檔案與依賴鏈
 
-使用 ast-grep 查找結構性 pattern，搭配 find 掌握目錄全貌。
-
 ### 步驟 3：識別依賴圖
 
 整理各模組間的依賴關係，確認實作順序（以下為通用範例，依實際 codebase 架構調整）：
@@ -95,7 +93,7 @@ PRD 讀取後，**必定**執行全面探索：
 **必須按依賴順序建立 issues**，blockers 先建，才能拿到真實 issue 號碼填入後續的 blocked-by。
 
 1. **確認 parent issue**：有提供 issue 號碼則直接使用。未提供則詢問是否建立新的 PRD parent issue，確認後用 `gh issue create` 建立
-2. 每個 issue 用 `gh issue create`，title 格式為 `[#<parent>] Task title`，加上 `ito-task` 和對應 size label（`size/xs`、`size/s`、`size/m`、`size/l`）
+2. 每個 issue 用 `gh issue create`，title 格式為 `[#<parent>] Task title`，加上 `Task` 和對應 size label（`size/xs`、`size/s`、`size/m`、`size/l`）
 3. 用 `gh api graphql` 執行 `addSubIssue` 將 task issue 掛到 parent
 4. 用 `gh api graphql` 執行 `addBlockedBy` 設定依賴關係
 
