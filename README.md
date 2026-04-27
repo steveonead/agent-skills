@@ -29,7 +29,7 @@ ito-* 流程會搭配以下工具使用，建議一併安裝：
 | **DeepWiki MCP** | [CognitionAI/deepwiki](https://github.com/CognitionAI/deepwiki) | 免認證的 remote MCP，可對 GitHub repo 的 AI 生成文件直接提問。 |
 | **Exa MCP** | [exa-labs/exa-mcp-server](https://github.com/exa-labs/exa-mcp-server) | Exa 官方 MCP server，提供網路搜尋、網頁爬取與深度研究等能力。 |
 | **ast-grep** | [ast-grep/ast-grep](https://github.com/ast-grep/ast-grep) | 以 AST pattern 進行結構化程式碼搜尋與改寫的 CLI 工具。 |
-| **Playwriter** | [remorses/playwriter](https://github.com/remorses/playwriter) | 透過 Chrome 擴充功能在本機瀏覽器執行 Playwright 片段的 CLI。 |
+| **Chrome DevTools MCP** | [chrome-devtools-mcp](https://github.com/nickhsmith/chrome-devtools-mcp) | 透過 Chrome DevTools Protocol 在本機瀏覽器執行截圖、DOM 檢查、Console 讀取、Network 攔截與 Performance 分析。 |
 
 ---
 
@@ -41,8 +41,10 @@ ito-* 流程會搭配以下工具使用，建議一併安裝：
 |---|---|---|
 | `docs/ito-temp/idea/` | `ito-grill` | 訪談收斂後的摘要 |
 | `docs/ito-temp/prd/` | `ito-prd` | 存於 local 的 PRD 文件 |
-| `docs/ito-temp/verify/` | `ito-browser-verify` | UI 驗收報告 |
+| `docs/ito-temp/tasks/` | `ito-issues` | 存於 local 的任務清單 |
+| `docs/ito-temp/ui-verify/` | `ito-ui-verify` | UI 驗收報告 |
 | `docs/ito-temp/explain/` | `ito-explain` | 架構解釋存檔 |
+| `docs/ito-temp/issues/` | `ito-hunt` | 無 GitHub remote 時的 issue 草稿 |
 
 範例 `.gitignore` 片段：
 
@@ -55,18 +57,21 @@ docs/ito-temp/
 ## 開發生命週期
 
 ```
-┌─ Define ──────────────┐   ┌─ Plan ────┐   ┌─ Build ─┐   ┌─ Verify ──────────┐   ┌─ Ship ────┐
-│ ito-grill ─▶ ito-prd  │─▶ │ito-issues │─▶ │ ito-tdd │─▶ │ito-browser-verify │─▶ │ito-commit │
-└───────────────────────┘   └───────────┘   └─────────┘   └───────────────────┘   └───────────┘
-                                                 ▲                  │
-                                                 │                  │
-                                                 └── Fail：Prove-It ┘
-                                                         Spec
+┌─ Define ──────────────┐   ┌─ Plan ──────┐   ┌─ Build ──┐   ┌─ Verify ──────┐   ┌─ Ship ────┐
+│ ito-grill ─▶ ito-prd  │─▶ │ ito-issues  │─▶ │ ito-tdd  │─▶ │ito-ui-verify  │─▶ │ito-commit │
+└───────────────────────┘   └─────────────┘   └──────────┘   └───────────────┘   └───────────┘
 ```
 
-另有三個橫向支援 skill：`ito-explain` 隨時可在任一階段切出，產出 codebase 架構解釋；`ito-search` 提供外部資訊查詢工具組（lib 文件、GitHub repo 內部運作、社群討論等）；`ito-create-skill` 為 Meta skill，橫跨所有階段，供建立與審查 skill 本身。
+**橫向支援 skill**（可在任一階段切出）：
 
-每個 skill 代表一段獨立流程。使用者可從任一階段開始，也可依箭頭方向接續執行。當 `ito-browser-verify` 驗證失敗時，會產出 TDD Prove-It Reproduction Spec，回饋至 `ito-tdd` 作為下一輪 failing test 的起點。
+- `ito-explain`：需要建立 codebase mental model 時
+- `ito-search`：需要外部資訊（lib API、社群討論、best practice）時
+- `ito-hunt`：遇到 error message 或 bug 需系統化診斷時
+- `ito-cleanup`：實作完成後整理 code 品質，或手動清理指定檔案時
+
+**Meta skill**：`ito-skill` 負責建立、修改與審查 skill 本身。
+
+每個 skill 代表一段獨立流程。使用者可從任一階段開始，也可依箭頭方向接續執行。
 
 ---
 
@@ -76,13 +81,15 @@ docs/ito-temp/
 |---|---|---|
 | `/ito-grill` | Define | 逐一追問決策分支，壓力測試計畫或釐清需求 |
 | `/ito-prd` | Define | 將需求訪談收斂為結構化 PRD，存至 local 或建立 gh issue |
-| `/ito-issues` | Plan | 讀取 PRD issue，拆成可獨立 demo 的 vertical slice sub-issues |
-| `/ito-tdd` | Build | 以紅綠重構流程開發新功能；修 bug 時採用 Prove-It 變體 |
-| `/ito-browser-verify` | Verify | 透過瀏覽器工具依 AC 執行 UI 層整合驗證，產出結構化報告 |
+| `/ito-issues` | Plan | 深度探索 codebase，將 PRD 拆成含驗收條件與 size 標籤的垂直 slice |
+| `/ito-tdd` | Build | 以紅綠重構流程開發新功能，修 bug 時採用 Prove-It Pattern |
+| `/ito-ui-verify` | Verify | 透過 Chrome DevTools MCP 依需求執行 UI 層驗證，產出只列失敗項的報告 |
 | `/ito-commit` | Ship | 掃描 git 工作區改動並依語意分組，生成 Conventional Commits 計畫 |
+| `/ito-cleanup` | Build/Ship | 清理 code 品質問題（debug log、冗餘邏輯、命名等），行為完全保留 |
+| `/ito-hunt` | Debug | 假設驅動的除錯診斷，從 error message 追查 root cause |
 | `/ito-explain` | Support | 派平行 sub-agent 探索 codebase，產出含圖、資料流與設計決策的架構解釋 |
 | `/ito-search` | Support | 提供 ctx7／deepwiki／exa／gh 等外部搜尋工具組，由 agent 依 query 自選並過濾劣質網域 |
-| `/ito-create-skill` | Meta | 依 agentskills.io 規範撰寫或審查 skill 本身 |
+| `/ito-skill` | Meta | 以訪談式流程建立、修改或審查 skill |
 
 ---
 
@@ -91,105 +98,150 @@ docs/ito-temp/
 ### 釐清需求 - [`ito-grill`](.claude/skills/ito-grill/SKILL.md)
 
 **做什麼**
-- 依決策樹逐分支追問，與使用者達成共識
-- 收斂後可選擇將摘要存至 `docs/ito-temp/idea/`
+- 沿決策樹分支深挖，一回合只問一題，主動挑戰假設而非被動收集資訊
+- 問題分三類：決策型（附推薦理由）、現況確認型、開放型（附預期假設）
+- 所有分支都覆蓋、所有假設都被挑戰後才宣告收斂，收斂後可存至 `docs/ito-temp/idea/`
 
 **使用時機**
 - 使用者說「我想討論」、「幫我釐清」
-- 需求模糊、需要壓力測試計畫或驗證假設
+- 需求模糊、需要壓力測試計畫或驗證假設，且方向尚未確立
+
+---
 
 ### 產生 PRD - [`ito-prd`](.claude/skills/ito-prd/SKILL.md)
 
 **做什麼**
-- 逐題訪談收斂為結構化 PRD，包含 User Stories、AC、Out of Scope、已知侷限
-- 支援新增與編輯兩種模式
-- 最後存至 `docs/ito-temp/prd/`，或建立 gh issue（帶 `PRD` label 與 `[PRD-{編號}]` 前綴）
+- 逐題深度訪談，涵蓋現況、痛點、目標、User Stories、AC、Out of Scope、已知侷限
+- 支援建立新 PRD 與修改既有 PRD（本地路徑或 issue 編號）兩種模式
+- 最終存至 `docs/ito-temp/prd/`，或建立 gh issue（帶 `PRD` label 與 `[PRD-{編號}]` 前綴）
 
 **使用時機**
 - 使用者說「寫 PRD」、「整理需求」、「開需求 issue」
-- 使用者說「編輯 issue 的 PRD」
+- 使用者說「編輯 issue 的 PRD」或提及既有 PRD 路徑
 
-### 跟據 PRD 拆任務 - [`ito-issues`](.claude/skills/ito-issues/SKILL.md)
+---
+
+### 根據 PRD 拆任務 - [`ito-issues`](.claude/skills/ito-issues/SKILL.md)
 
 **做什麼**
-- 讀取 PRD issue，以 read-only 方式探索 codebase
-- 切分 vertical slice sub-issues
-- 以 GitHub 原生 sub-issue 與 Blocked by 建立依賴
-- Title 格式為 `[PRD-<parent>/<index>]`
+- 讀取 PRD（issue 編號、本地路徑或對話），深度探索 codebase 後識別依賴圖
+- 切分垂直 slice，每個任務含描述、驗收條件、Blocked by、預計碰的檔案、Size 標籤
+- 草稿確認後存至 `docs/ito-temp/tasks/`，或推送為 GitHub sub-issues（含原生 blocked-by 關係）
 
 **使用時機**
-- 使用者說「把 PRD 拆成 task」、「建 sub-issue」
+- 使用者說「把 PRD 拆成 task」、「建 sub-issue」、「task breakdown」
 - `ito-prd` 完成後接著拆 task
+
+---
 
 ### 執行 TDD - [`ito-tdd`](.claude/skills/ito-tdd/SKILL.md)
 
 **做什麼**
-- 須先完成 Planning（interface、behaviors、priority）並取得批准
-- 以 tracer bullet 逐條執行 RED → GREEN → REFACTOR
-- 修 bug 時採用 Prove-It 變體：先撰寫能重現問題的 failing test，再修改程式碼
+- 規劃介面變更與行為列表後取得批准，再以 tracer bullet 逐條執行 RED → GREEN → REFACTOR
+- 測試驗證行為而非實作：透過公開 API 測真實執行路徑，重構後不應失效
+- 修 bug 時採用 Prove-It Pattern：先寫能重現 bug 的 failing test，再修改程式碼
 
 **使用時機**
-- 使用者明確要求「TDD」、「先寫測試」、「紅綠重構」、「Prove-It」
+- 使用者明確提到「TDD」、「先寫測試」、「紅綠重構」、「Prove-It」
 - 需要測試先行的情境
 
-### 驗證 UI/UX - [`ito-browser-verify`](.claude/skills/ito-browser-verify/SKILL.md)
+---
+
+### 驗證 UI - [`ito-ui-verify`](.claude/skills/ito-ui-verify/SKILL.md)
 
 **做什麼**
-- 依驗收標準（GitHub issue、local markdown 或對話提供）產出 Planning 並取得批准
-- 透過 `/playwriter` 或其他瀏覽器工具逐條驗證
-- 失敗項目收集 evidence 並產出 Prove-It Reproduction Spec
-- 最終寫入 `docs/ito-temp/verify/[slug]-[timestamp].md`
+- 接收 URL 與驗證需求，使用 Chrome DevTools MCP 在真實瀏覽器中執行驗證
+- 依需求關鍵字自動啟用對應面向：視覺截圖、Console、DOM 結構、Network、Performance、Accessibility
+- 產出只列失敗項的結構化報告，可存至本地或建立 GitHub issue（label: Bug）
 
 **使用時機**
-- 使用者要求「做 UI 驗證」、「驗收 PRD 或 issue」
-- 使用者說「用瀏覽器驗剛完成的功能」
+- 使用者說「驗證 UI」、「檢查頁面」、「測試頁面是否符合需求」
+- 開發完成後確認頁面行為符合規格，或調查 UI 視覺異常、console error、network 失敗
+
+---
 
 ### Git Commit 分組 - [`ito-commit`](.claude/skills/ito-commit/SKILL.md)
 
 **做什麼**
 - 讀取 `git diff` 與 `git log`，自動偵測 commit message 語言
-- 依語意分組產出 Conventional Commits 計畫
-- 使用者 A／B 確認後依序執行；`--fast` 標記可將改動合併為單一 commit
+- 依語意分組產出 Conventional Commits 計畫，展示後等確認再執行
+- `/ito-commit fast` 可將所有非 lock file 變更合為單一 commit
 - 不執行 `git push`、不使用 `git add -A`
 
 **使用時機**
 - 整理工作區多個性質不同的改動
-- 小幅改動想快速提交
+- 使用者說「commit」、「幫我 commit」、「提交變更」
 
-### 解釋 codebase - [`ito-explain`](.claude/skills/ito-explain/SKILL.md)
+---
+
+### 清理 Code 品質 - [`ito-cleanup`](.claude/skills/ito-cleanup/SKILL.md)
 
 **做什麼**
-- 解析問題範圍，依複雜度走 simple（單一 agent）或 complex（3–5 個平行 sub-agent + synthesizer）路徑
-- Complex 路徑派出 code explorers 與 doc explorer 並行探索程式碼與架構文件（`docs/`、`ARCHITECTURE.md`、`ADR` 等），doc 僅供參考、code 為準
-- 產出五段結構：概覽／核心概念／運作方式／檔案位置／Gotchas，三處段落必附圖（Mermaid `classDiagram`／`sequenceDiagram`／`flowchart` 或 ASCII tree）
-- 完成後詢問是否存至 `docs/ito-temp/explain/[主題].md`
+- 掃描 git 變更（預設）或指定檔案，清理 debug log、未使用 import、commented-out code、冗餘邏輯、命名問題與結構複雜度
+- 行為完全保留：不改變輸入輸出、副作用與 error 行為
+- 完成後執行測試套件，通過才展示 diff，失敗則 revert 所有變更
 
 **使用時機**
-- 使用者說「解釋 X 怎麼運作」、「X 架構長怎樣」、「走過 X 的完整流程」、「帶讀 X 的原理」
+- 使用者手動呼叫 `/ito-cleanup`（agent 不自行判斷是否執行）
+- 實作完成後整理 code 品質，或修正特定 code smell
+
+**不適用：** 修改邏輯、新增功能、大幅重構、未完成的半成品 code
+
+---
+
+### 假設驅動除錯 - [`ito-hunt`](.claude/skills/ito-hunt/SKILL.md)
+
+**做什麼**
+- 從 error message 或 stack trace 出發，以「我認為 root cause 是 X，因為具體證據」格式提假設
+- 一次只驗證一個假設，連續三次被反證後強制輸出 handoff 報告而非繼續猜測
+- 診斷成功後評估影響範圍，推薦直接修復或開 GitHub issue
+
+**使用時機**
+- 使用者貼出 error message、exception、stack trace、crash 日誌
+- 使用者說「這個 error 是什麼意思」、「為什麼會壞」且附有具體錯誤內容
+
+**不適用：** 沒有 error message 的模糊問題描述、需要直接修改程式碼、需要 code review
+
+---
+
+### 解釋 Codebase - [`ito-explain`](.claude/skills/ito-explain/SKILL.md)
+
+**做什麼**
+- 評估問題複雜度，走 simple（單一 agent）或 complex（2–4 個平行 explorer subagent + synthesizer）路徑
+- Complex 路徑平行探索不同角度（如資料模型、渲染流程、scroll 基礎設施），最終彙整
+- 產出以使用者提問語言撰寫的結構化說明，完成後詢問是否存至 `docs/ito-temp/explain/`
+
+**使用時機**
+- 使用者說「解釋 X 怎麼運作」、「X 架構長怎樣」、「走過 X 的完整流程」
 - 需要 onboarding 級別的架構理解或 runtime trace
+
+---
 
 ### 外部搜尋 - [`ito-search`](.claude/skills/ito-search/SKILL.md)
 
 **做什麼**
-- 提供一組外部搜尋工具（`/find-docs`、deepwiki MCP、exa MCP、gh CLI、harness 內建 WebSearch／WebFetch），由 agent 依 query 性質自選或多工具並用
-- 結果經 `references/source-filter.md` 黑名單過濾劣質網域（如 `csdn.net`、`51cto.com`、`tutorialspoint.com`、`w3schools.com` 等）
-- 輸出強制附引用編號 `[1]`、`[2]` 與末段「來源」URL 清單，並標示「使用工具：X」
-- 一次性查詢，不存檔
+- 提供四類工具：`/find-docs`（官方文件，失敗時 fallback context7）、deepwiki MCP（GitHub repo 架構問答）、exa MCP（社群討論與 best practice）、gh CLI（issue/PR 追蹤）
+- 依 query 性質自選或平行執行多工具，結果經黑名單過濾劣質網域
+- 輸出附引用來源 URL 清單，一次性查詢，不存檔
 
 **使用時機**
-- 使用者明確呼叫 `/ito-search` 或以自然語觸發：「幫我查⋯」「搜尋一下⋯」「找一下⋯」
-- 需查 lib／framework／SDK／CLI 的官方 API、GitHub repo 內部運作、bug 訊息、社群討論、best practice 等外部資訊
-- 不適用於 codebase 搜尋、需直接實作的任務、需長期保留結果的研究
+- 使用者明確呼叫 `/ito-search` 或自然語觸發：「幫我查⋯」「搜尋一下⋯」「找一下⋯」
+- 需查 lib／framework／SDK 官方 API、GitHub repo 內部運作、bug 訊息、社群討論、best practice
 
-### 建立新 SKILL - [`ito-create-skill`](.claude/skills/ito-create-skill/SKILL.md)
+---
+
+### 建立、修改與審查 Skill - [`ito-skill`](.claude/skills/ito-skill/SKILL.md)
 
 **做什麼**
-- 依 agentskills.io 規範建立新 skill，含 metadata 驗證、目錄結構、progressive disclosure
-- 審查既有 skill，依 rubric 產出含嚴重度標註的 inline findings 報告
+- **建立模式**：動態訪談收集 name、description、使用時機、核心流程步驟，推斷子目錄需求，預覽確認後寫入
+- **編輯模式**：讀取既有 skill 全部檔案，只針對變更點與其直接依賴分支訪談，差異預覽確認後寫入
+- **review 模式**：執行 frontmatter 驗證腳本 + rubric 審查，條列問題（含位置與建議），選擇性修正
+- 建立與編輯後自動執行自我審查
 
 **使用時機**
-- 需要建立新 skill
-- 需要審查既有 skill 的合規與設計邏輯
+- 使用者說「建立一個 skill」、「寫一個 skill」（建立模式）
+- 使用者說「改 [skill-name]」、「更新 [skill-name] 的觸發條件」（編輯模式）
+- 使用者說「審查 [skill-name]」、「檢查 [skill-name] 的品質」（review 模式）
 
 ---
 
@@ -198,8 +250,8 @@ docs/ito-temp/
 ### 線性流程
 
 ```
-ito-grill ──▶ ito-prd ──▶ ito-issues ──▶ ito-tdd ──▶ ito-browser-verify ──▶ ito-commit
- (釐清)        (PRD)       (拆 task)      (實作)        (UI 驗收)             (送出)
+ito-grill ──▶ ito-prd ──▶ ito-issues ──▶ ito-tdd ──▶ ito-ui-verify ──▶ ito-commit
+ (釐清)        (PRD)       (拆 task)      (實作)        (UI 驗收)          (送出)
 ```
 
 各 skill 的 SKILL.md 已內建主動接手規則：
@@ -209,25 +261,22 @@ ito-grill ──▶ ito-prd ──▶ ito-issues ──▶ ito-tdd ──▶ ito
 
 ### 非線性回饋
 
-```
-ito-browser-verify ──── Prove-It Spec ──▶ ito-tdd
- (Fail 報告)                                (Prove-It 變體)
-```
-
-`ito-browser-verify` 產出的報告會在失敗項目附上「失敗操作序列 + failure signature + URL/user/state context + 相關 API response 或 DOM 節點」，可直接作為 `ito-tdd` Prove-It 變體的 failing test 起點，形成驗證與修復的完整循環。
+`ito-ui-verify` 產出只列失敗項的報告（Console error、Network 失敗、DOM 截圖等）。若需要將失敗重現為測試保護，需由使用者手動將報告內容帶入 `ito-tdd` Prove-It Pattern作為起點，兩者之間沒有自動接手機制。
 
 ### 隨時可切出的橫向支援
 
-- **`ito-grill`**：在 `ito-prd`、`ito-issues`、`ito-tdd` 任一階段遇到需求不明或設計分歧時，使用者可主動切換釐清，完成後再回原流程。
-- **`ito-explain`**：在 `ito-issues`、`ito-tdd`、`ito-browser-verify` 任一階段需要建立 codebase mental model 時切出，產出架構解釋後再回原流程實作或驗收。
+- **`ito-grill`**：在 `ito-prd`、`ito-issues`、`ito-tdd` 任一階段遇到需求不明或設計分歧時切出，完成後再回原流程。
+- **`ito-explain`**：在 `ito-issues`、`ito-tdd`、`ito-ui-verify` 任一階段需要建立 codebase mental model 時切出，產出架構解釋後再回原流程。
 - **`ito-search`**：在任一階段需要外部資訊（lib 官方 API、GitHub repo 內部運作、bug 訊息、社群討論、best practice）時切出，取得附來源 URL 的查詢結果後再回原流程。
-- **`ito-create-skill`**：當上述任一 skill 需要調整或新增時，透過 Meta 流程處理，避免直接修改而破壞既有契約。
+- **`ito-hunt`**：遇到 error message 或難以定位的 bug 時切出，確認 root cause 後再決定直接修復或開 issue。
+- **`ito-cleanup`**：功能實作完成後、送出前，由使用者手動呼叫清理 code 品質，不由 agent 自行判斷是否執行。
+- **`ito-skill`**：當上述任一 skill 需要調整或新增時，透過訪談式流程處理，避免直接修改而破壞既有契約。
 
 ---
 
 ## 設計原則
 
-所有 ito-* skill 皆依循 `ito-create-skill` 所訂的四大原則：
+所有 ito-* skill 皆依循 `ito-skill` 所訂的四大原則：
 
 1. **流程而非散文** — Skill 是 agent 執行的工作流程，每份都具備步驟、檢查點與結束條件，而非供人閱讀的參考文件。
 2. **反合理化機制** — 每份 skill 附一張「常見合理化藉口」表，列出 agent 可能用來跳過步驟的藉口，並提供對應反駁。
