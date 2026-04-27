@@ -1,6 +1,6 @@
 ---
 name: [skill-name]
-description: [以第三人稱陳述此 skill 的功能]。適用於 [trigger 1]。適用於 [trigger 2]。不適用於 [明確的負面觸發條件]。上限 200 Unicode 字元。
+description: [以第三人稱陳述此 skill 的功能]。適用於 [trigger 1]。適用於 [trigger 2]。不適用於 [明確的負面觸發條件]。上限 250 Unicode 字元。
 ---
 
 # [Skill 標題]
@@ -11,7 +11,7 @@ description: [以第三人稱陳述此 skill 的功能]。適用於 [trigger 1]�
 
 ## 使用時機
 
-- [正向觸發條件 1——症狀、任務類型或請求模式]
+- [正向觸發條件 1——問題、任務類型或請求模式]
 - [正向觸發條件 2]
 - [正向觸發條件 3]
 
@@ -34,14 +34,6 @@ description: [以第三人稱陳述此 skill 的功能]。適用於 [trigger 1]�
 
 1. [步驟]
 2. [步驟]
-
-## 具體技巧／模式
-
-[針對非顯而易見的情境提供詳細指引、程式碼範例、模板或表格。若核心流程已涵蓋全部內容則略去此節。]
-
-```[language]
-// [最小、具示範性的範例程式碼]
-```
 
 ## 常見合理化藉口
 
@@ -71,3 +63,5 @@ description: [以第三人稱陳述此 skill 的功能]。適用於 [trigger 1]�
 
 - [以名稱交叉引用其他 skill，不重複內容，例：「遵循 `test-driven-development` 撰寫測試。」]
 - [連結到 `references/[deep-dive].md` 以取得延伸背景。]
+- [連結到 `assets/[template].md` 以取得延伸背景。]
+- [連結到 `scripts/[script].md` 以取得相關腳本。]
