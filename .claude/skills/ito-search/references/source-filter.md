@@ -4,6 +4,18 @@
 
 第 9 節為**升級本表的動態訂閱來源**，**非黑名單**，agent 不應納入 substring match。
 
+## 目錄
+
+- §1 英文圈教學／SEO 農場
+- §2 Stack Overflow／GitHub 抄襲與機翻鏡像（多語）
+- §3 GitHub repo／issue 鏡像
+- §4 Wikipedia 鏡像
+- §5 AI／低品質科技文章農場
+- §6 假冒下載／釣魚站（含品牌冒名）
+- §7 簡／繁中文內容農場
+- §8 廠商 SEO 灰名單（路徑限定）
+- §9 動態訂閱來源（**非黑名單**，不納入 match）
+
 ## 1. 英文圈教學／SEO 農場
 
 - codegrepper.com

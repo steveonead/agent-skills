@@ -1,226 +1,147 @@
 ---
 name: ito-commit
-description: 掃描 git 工作區所有改動，依語意邏輯分組，生成符合 Conventional Commits 規範的 commit 計畫並於使用者確認後依序執行。適用於整理工作區提交、自動撰寫 commit message、一次處理多個性質不同的改動。支援 --fast 標記將所有改動合併為單一 commit。不適用於需要 push、需要調整單一 commit、或尚未完成改動的情境。
+description: 掃描 git 工作區所有變更，智慧分組後依序 commit 並展示計畫待確認。適用於使用者說「commit」、「提交變更」、「幫忙 commit」。支援 fast mode（非 lock file 變更合為單一 commit）。不適用於需要手動控制 staging 或執行 push 的情境。
 ---
 
 # ito-commit
 
 ## 概覽
 
-本 skill 讀取 git 工作區所有 staged 與 unstaged 改動，生成符合 Conventional Commits 規範的 commit 計畫，待使用者確認後依序執行。使用者全程不需手動撰寫 commit message。
+掃描工作區所有未提交變更，透過目錄結構與語意分析自動分組，展示計畫後依序執行 commit。支援 `/ito-commit fast` 將所有變更合為單一 commit。
 
 ## 使用時機
 
-- 使用者輸入 `/ito-commit` 或要求「整理 commit」、「幫我 commit」、「生成 commit message」。
-- 工作區累積多個性質不同的改動，需要拆成多個 commit。
-- 小幅改動想快速提交，使用者指定 `--fast` 標記合併為單一 commit。
+- 使用者說「commit」、「幫我 commit」、「提交變更」
+- 使用者輸入 `/ito-commit` 或 `/ito-commit fast`
+- 需要將工作區變更整理成有意義的 commit 歷史
 
-**不應使用的情況：** 使用者要求 push、要求只調整既有 commit 計畫中的某一則 message、尚有改動未完成而需繼續撰寫程式碼的情境。這些任務另行處理。
+**不應使用的情況：** 需要手動控制 staging 的情境、需要執行 git push 的任務、需要 rebase 或 cherry-pick 的情境。
 
 ## 核心流程
 
-### 步驟 1：掃描工作區
+### 步驟 1：判斷模式
 
-1. 執行 `git status` 以取得工作區清單，確認是否存在 untracked files。
-2. 執行 `git diff HEAD` 以取得 staged 與 unstaged 完整 diff 內容。
-3. 執行 `git log --oneline -10` 以取得近期 commit 歷史。
-4. 若 `git status` 顯示 untracked files，執行 `git add <untracked files>` 將其納入本輪分析範圍；不得以 `git add -A` 或 `git add .` 批次加入，以避免誤納敏感檔案。
+讀取 args：
+- 含 `fast` → fast mode，進入步驟 2，步驟 6 合為單一群組
+- 無參數 → smart mode，完整流程
 
-### 步驟 2：偵測 commit message 語言
+### 步驟 2：掃描工作區
 
-1. 解析步驟 1 中 `git log` 的輸出，判別近期 commit message 使用的自然語言。
-2. 若近 10 則 commit 皆使用同一語言，後續生成的 commit message 一律沿用該語言。
-3. 若近 10 則 commit 混用多種語言，於對話中輸出以下訊息並等待使用者明確回覆再繼續：
+執行以下指令取得變更清單：
 
-   > 「偵測到近期 commit message 使用了多種語言（如：中文、英文）。請問本次要使用哪種語言來撰寫 commit message？」
-
-4. 不使用 AskUserQuestion 工具；所有語言詢問皆以對話文字進行。
-
-### 步驟 3：判斷執行模式
-
-1. 若使用者輸入含 `--fast` 標記，跳至步驟 7 執行快速模式。
-2. 否則進入步驟 4 執行標準模式。
-
-### 步驟 4：語意分組（標準模式）
-
-1. 以 `git diff` 完整內容為依據，依**語意邏輯**判斷哪些檔案屬同一個 commit。目錄結構僅供輔助，不得作為唯一分組依據。
-2. 套用下列分組原則：
-   - **功能相關**：同一 feature 的前端元件、後端邏輯、對應測試歸入同一 commit。
-   - **獨立性**：與其他改動無邏輯依賴的修改（如獨立文件更新、chore）單獨成一個 commit。
-   - **跟隨慣例**：讀 `git log` 掌握現有 scope 命名方式（例：`auth`、`api`、`ui`）並沿用。新專案則以目錄或模組名稱推斷合理 scope。
-
-### 步驟 5：生成 Commit 計畫
-
-1. 依「輸出格式與 Type 對照」章節的標準模式格式生成計畫，並依 type 對照表選用正確 type。
-2. 依該格式將每則 commit 的 type、scope、message、改動描述與涉及檔案填入計畫。
-3. 所有文字一律使用步驟 2 確認的語言，不得混用。
-
-### 步驟 6：確認計畫並執行
-
-1. 於對話中呈現完整計畫後，附上下列兩個選項：
-
-   > A）確認執行 — 依序執行上述所有 commit
-   >
-   > B）提供修改意見 — 輸入意見，整個計畫重新生成
-
-2. 等待使用者明確回覆。若回覆為 B，擷取使用者意見後回到步驟 4 重新分組，反覆直到使用者選 A 為止。
-3. 選 A 後，依計畫順序逐一執行：
-
-   ```bash
-   git add <commit-1 的檔案>
-   git commit -m "<commit-1 message>"
-
-   git add <commit-2 的檔案>
-   git commit -m "<commit-2 message>"
-   ```
-
-4. 全部完成後，執行 `git log --oneline -<N>`（N 為本次 commit 數）並將結果納入對話內的執行摘要：
-
-   ```
-   完成！共執行 N 個 commits：
-   - <sha> <message>
-   - <sha> <message>
-   ```
-
-5. 結束後不執行 `git push`。
-
-### 步驟 7：快速模式（--fast）
-
-1. 執行 `git add <所有選定的檔案>` 以將改動納入 staging（不使用 `git add -A` 或 `git add .`）。
-2. 執行 `git diff --cached` 取得涵蓋所有改動的 diff。
-3. 依「輸出格式與 Type 對照」章節的快速模式格式生成提案。
-4. 依該格式生成單一 commit 提案，於對話中展示並附上步驟 6 的 A／B 選項。等使用者明確回覆後再繼續。
-5. 使用者選 A 後執行 `git commit -m "<message>"`，接著執行 `git log --oneline -1` 並輸出執行摘要。
-
-## 輸出格式與 Type 對照
-
-### 標準模式（多個 commits）
-
-**中文：**
-
-```
-Commit 計畫：
-
-Commit 1: <type>(<scope>): <message>
-詳細內容：
-- <改動描述 1>
-- <改動描述 2>
-檔案：
-- path/to/file1
-- path/to/file2
-
-Commit 2: <type>(<scope>): <message>
-詳細內容：
-- <改動描述>
-檔案：
-- path/to/file3
+```bash
+git status --short
+git diff -U1 --no-color
+git diff --cached -U1 --no-color
 ```
 
-**English:**
+去除 diff metadata header（`diff --git`、`index`、`---`、`+++` 開頭的行），保留變更行與相鄰 context。總行數超過 500 時截斷。
 
-```
-Commit Plan:
+若工作區無任何變更，顯示「工作區無變更」後結束。
 
-Commit 1: <type>(<scope>): <message>
-Changes:
-- <change description 1>
-- <change description 2>
-Files:
-- path/to/file1
-- path/to/file2
+若 `git status --short` 輸出含 `UU`、`AA`、`DD`、`AU`、`UA` 等 merge conflict 標記，顯示「工作區有未解衝突，請先執行 git mergetool 或手動解決後再 commit」，列出衝突檔名後結束。
 
-Commit 2: <type>(<scope>): <message>
-Changes:
-- <change description>
-Files:
-- path/to/file3
-```
+### 步驟 3：Lock file 前處理
 
-### 快速模式（單一 commit）
+偵測 lock file 模式：`package-lock.json`、`yarn.lock`、`pnpm-lock.yaml`、`*.lock`、`Cargo.lock`、`Gemfile.lock`。
 
-**中文：**
+命中時：跳過其 diff 內容，從主要變更清單移除，建立獨立群組，commit message 固定為 `chore: update lock file`。
 
-```
-<type>(<scope>): <message>
-詳細內容：
-- <改動描述 1>
-- <改動描述 2>
-檔案：
-- path/to/file1
-- path/to/file2
+### 步驟 4：敏感檔案偵測
+
+掃描變更檔名，偵測高風險模式：`.env`、`.env.*`、`*.pem`、`*.key`、`*.p12`、`*secret*`、`*credential*`、`*password*`。
+
+命中時顯示警告並列出檔名，等使用者確認後繼續。
+
+### 步驟 5：語言偵測
+
+```bash
+git log --oneline -5
 ```
 
-**English:**
+分析最近 5 筆 commit message 語言：
+- 全為中文 → 沿用中文
+- 全為英文 → 沿用英文
+- 有混合 → 詢問：「最近的 commit 有中英文混用，這次要用哪種語言？」
+
+### 步驟 6：分組
+
+**smart mode：** 依目錄結構與語意分析分組。判斷原則：
+- 同功能模組（相同目錄或緊密相關的跨目錄變更）歸為一組
+- 測試檔與對應的業務邏輯視為同組
+- 設定檔、文件、工具設定可獨立成組
+
+分組數超過 5 時顯示：「分組較多（N 個 commit），是否改用 fast mode？」，等使用者選擇：若選 fast mode，合為單一群組後繼續步驟 7；若繼續，維持原分組進入步驟 7。
+
+**fast mode：** 所有非 lock file 變更合為單一群組。
+
+### 步驟 7：生成 Commit Message
+
+對每個群組，依步驟 5 偵測的語言生成 Conventional Commits 格式 message：
+- 從 `feat`、`fix`、`chore`、`refactor`、`test`、`docs`、`style`、`ci` 中選最適型別
+- 有明確模組邊界時加入 scope（`feat(auth): ...`），否則省略
+- subject 長度控制在 72 字元以內
+
+### 步驟 8：展示計畫並確認
+
+展示所有 commit 計畫：
 
 ```
-<type>(<scope>): <message>
-Changes:
-- <change description 1>
-- <change description 2>
-Files:
-- path/to/file1
-- path/to/file2
+將建立 N 個 commit：
+
+[1] feat(auth): add token refresh logic
+    - src/auth/token.ts
+    - src/auth/refresh.ts
+
+[2] test(auth): add token refresh tests
+    - src/auth/token.test.ts
+
+[3] chore: update lock file
+    - package-lock.json
+
+確認執行？(y/n)
 ```
 
-### Conventional Commits type 對照
+收到 `y` 後進入步驟 9。收到 `n` 或修改指示時，等待使用者說明修改意見，依指示調整計畫後重新展示。
 
-| type | 用途 |
-|------|------|
-| `feat` | 新功能 |
-| `fix` | 修 bug |
-| `docs` | 文件變更 |
-| `style` | 格式調整（不影響邏輯） |
-| `refactor` | 重構（非新功能、非 bug fix） |
-| `perf` | 效能改善 |
-| `test` | 新增或修正測試 |
-| `build` | 建構系統或外部相依 |
-| `chore` | 雜務（依賴更新、維護任務） |
-| `ci` | CI/CD 設定 |
-| `revert` | 還原先前 commit |
+### 步驟 9：依序執行 Commit
 
-## 規則速查
+對每個群組依序執行：
 
-| 規則 | 說明 |
-|------|------|
-| 不詢問意圖 | 全自動讀 diff 生成 message，不詢問「你想寫什麼 commit message？」 |
-| 不自動 push | commit 完成即停止，不執行 `git push`。 |
-| 不支援局部修改 | 不同意時整個計畫重新生成，不支援只調整其中一則。 |
-| 不偵測 breaking change | 由使用者自行判斷；如需要請手動於 message 加上 `!` 或 `BREAKING CHANGE:`。 |
-| 跟隨現有慣例 | 讀 `git log` 了解 scope 命名，維持 codebase 一致性。 |
-| 不使用 AskUserQuestion | 所有詢問皆以對話文字進行。 |
-| 不使用 `git add -A`／`git add .` | 僅加入本次計畫涵蓋的檔案，避免誤納 `.env`、credentials 等敏感檔。 |
+```bash
+git add <group files>
+git commit -m "<message>"
+```
+
+全部完成後顯示摘要（列出各 commit 的 hash 與 message），不執行 git push。
+
+若某個 commit 因 pre-commit hook 失敗，顯示 hook 錯誤內容，停止後續 commit，提示使用者修復後重新執行。
 
 ## 常見合理化藉口
 
 | 合理化藉口 | 實際情況 |
 |---|---|
-| 「diff 很明顯，不用讀 `git log` 也能猜 scope」 | 跳過 log 會偏離既有 scope 命名慣例，commit 歷史立刻出現風格斷層。 |
-| 「語言自動判斷就好，不必詢問」 | log 混用多語時自行選語會讓 commit 歷史進一步混亂；必須詢問以保留決策權。 |
-| 「使用者只想調整其中一則 message，幫他局部改」 | 局部修改會打破分組邏輯；規則要求整個計畫重來，不得放行。 |
-| 「順便 push 方便一點」 | push 屬另一個動作，未經授權不得執行；commit 完成即停止。 |
-| 「`git add -A` 比較快」 | 批次 add 會把 `.env`、credentials、大型 binary 意外納入，必須逐檔加入。 |
-| 「--fast 模式小事，跳過確認」 | 未確認就 commit 等同剝奪使用者否決權；A／B 選項不可省略。 |
+| 「使用者說 y 了，可以直接執行不用等」 | 計畫展示後才收 y，收到 y 前不能執行任何 git add 或 git commit |
+| 「lock file 只有一個，放進主要分組不影響」 | lock file 固定獨立成 chore commit，不混入業務邏輯群組 |
+| 「語言看起來是英文，直接用不用問」 | 有中英混合時必須詢問，不猜測使用者偏好 |
+| 「fast mode 不用展示計畫，直接 commit 更快」 | Fast mode 仍需展示計畫等確認，只是群組只有一個 |
 
 ## 警訊
 
-- commit 計畫送出時，scope 與近期 log 風格不一致，顯示未讀 `git log`。
-- commit 執行後出現 `.env`、`credentials.json` 等敏感檔案進入歷史，顯示使用了批次 add。
-- 單次執行中出現兩種以上語言的 commit message，顯示步驟 2 未落實。
-- 計畫確認前已出現 `git commit` 或 `git push` 操作，顯示略過確認步驟。
-- 使用者回覆 B 後，下一版計畫仍與前一版幾近相同，顯示未真正納入意見。
+- 步驟 9 在收到 `y` 前執行
+- 敏感檔案未顯示警告直接納入分組
+- lock file 混入非 chore 的 commit 群組
+- commit message 超過 72 字元
+- fast mode 跳過計畫展示直接執行
 
 ## 驗證
 
-- [ ] `git log --oneline -<N>` 顯示本次所有 commit 皆已寫入歷史，sha 可查。
-- [ ] 執行 `git status` 回傳 clean（或僅剩下本次刻意未納入的檔案），確認計畫內檔案皆已提交。
-- [ ] 所有 commit message 皆符合 `<type>(<scope>): <subject>` 的 Conventional Commits 格式。
-- [ ] 所有 commit message 使用同一自然語言，與步驟 2 決定的語言一致。
-- [ ] 未執行 `git push`，未以 `--no-verify` 繞過 hook。
+- [ ] 所有計畫中的 commit 已建立（`git log --oneline -N` 可查看）
+- [ ] Lock file 變更在獨立的 chore commit 中
+- [ ] 無敏感檔案在未警告的情況下被 commit
+- [ ] 無執行 git push
 
 ## 錯誤處理
 
-- 若 `git status` 顯示工作區完全 clean，於對話中回報「無改動可 commit」並終止流程。
-- 若 `git diff HEAD` 輸出為空但 `git status` 顯示 untracked files，於執行 `git add` 後重讀 `git diff --cached`，確認 diff 非空再繼續。
-- 若 pre-commit hook 失敗（commit 未產生），保留現有 staging，於對話中回報錯誤訊息並請使用者決定修正方向；不得以 `--no-verify` 規避。
-- 若執行途中使用者要求中止，停在當前 commit 位置，輸出已完成的 commits 清單，不回退已 commit 的內容。
-- 若 `git log` 可解析的 commit 少於 10 則（新 repo），以現有 commit 為樣本；若完全無 commit，直接詢問使用者要使用何種語言撰寫 message。
+- 若非 git 工作區（`git status` 失敗），顯示錯誤後結束。
+- 若 pre-commit hook 失敗，顯示 hook 輸出，停止後續 commit，提示使用者修復後重新執行。
