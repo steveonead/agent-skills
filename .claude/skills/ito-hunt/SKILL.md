@@ -1,13 +1,13 @@
 ---
 name: ito-hunt
-description: 假設驅動的除錯診斷 skill，從 error message 追查 root cause，不直接修改程式碼。適用於使用者提供 error message 或 stack trace 需要系統化找出根本原因時。適用於「這個 error 是什麼意思」、「為什麼會壞」並附有錯誤訊息時。不適用於沒有 error message 的模糊問題描述、修改程式碼、或開 issue 以外的任務。
+description: 假設驅動的除錯診斷 skill，從 error message 追查 root cause，不直接修改程式碼。適用於使用者提供 error message 或 stack trace 需要系統化找出根本原因時。適用於「這個 error 是什麼意思」、「為什麼會壞」並附有錯誤訊息時。使用者未提供 error message 時，引導提供後繼續。不適用於修改程式碼、或開 issue 以外的任務。
 ---
 
 # ito-hunt：假設驅動除錯診斷
 
 ## 概覽
 
-從 error message 出發，用假設驅動的方式找到 root cause，再決定後續行動（交給 ito-tdd 修復或開 GitHub issue）。核心原則：沒有可測試的假設，不動任何程式碼。
+從 error message 出發，用假設驅動的方式找到 root cause，再決定後續行動（直接修復或開 GitHub issue）。核心原則：沒有可測試的假設，不動任何程式碼。
 
 ## 使用時機
 
@@ -15,7 +15,7 @@ description: 假設驅動的除錯診斷 skill，從 error message 追查 root c
 - 使用者說「報錯了」、「有錯誤訊息」並提供具體錯誤內容
 - 使用者問「這個 error 是什麼意思」且附上錯誤訊息
 
-**不應使用的情況：** 使用者沒有提供 error message（只說「壞了」但無具體錯誤）、需要直接修改程式碼、需要寫新功能、需要 code review。
+**不應使用的情況：** 需要直接修改程式碼、需要寫新功能、需要 code review。
 
 ## 核心流程
 
@@ -23,11 +23,13 @@ description: 假設驅動的除錯診斷 skill，從 error message 追查 root c
 
 確認使用者有提供 error message 或 stack trace。
 
-若無，要求使用者提供完整的 error message 或 stack trace，不開始診斷：
+若無，引導使用者提供錯誤資訊，不開始診斷：
 
 ```
-請提供完整的 error message 或 stack trace，再開始診斷。
+看起來有問題，請提供完整的 error message 或 stack trace，才能追查 root cause。可以從 console、terminal 輸出或日誌中找到。
 ```
+
+使用者提供後，進入步驟 2。
 
 ### 步驟 2：假設驅動診斷
 
@@ -94,7 +96,7 @@ root cause：[一句話，含 file:line]
 
 ```
 推薦行動：
-A. 用 `/ito-tdd` 修復 ← 適合影響範圍小、邊界清楚的修復
+A. 直接修復 ← 適合影響範圍小、邊界清楚的修復
 B. 開 GitHub issue ← 適合影響範圍大、需要討論或排期的問題
 請選擇（A/B）或告訴我你的想法：
 ```
@@ -152,7 +154,7 @@ root cause 診斷：[步驟 4 的輸出]
 
 ## 不在範圍內
 
-- 修改程式碼（交給 `/ito-tdd`）
+- 修改程式碼
 - git bisect
 - MCP tool 失敗的處理
 - 沒有 error message 的模糊問題描述

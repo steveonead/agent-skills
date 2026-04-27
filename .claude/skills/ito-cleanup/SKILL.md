@@ -1,6 +1,6 @@
 ---
 name: ito-cleanup
-description: 清理 git 變更或單一檔案中的程式碼，移除 debug log、未使用 import、commented-out code、冗餘邏輯、命名問題與結構複雜度，行為完全保留。PR 提交或 code review 前使用。不適用於修改邏輯、新增功能、大幅重構或半成品 code。僅限手動呼叫。
+description: 清理 git 變更或單一檔案中的程式碼，移除 debug log、未使用 import、commented-out code、冗餘邏輯、命名問題與結構複雜度，行為完全保留。不適用於修改邏輯、新增功能、大幅重構或半成品 code。僅限手動呼叫。
 ---
 
 # ito-cleanup
@@ -13,9 +13,8 @@ description: 清理 git 變更或單一檔案中的程式碼，移除 debug log�
 
 **僅限使用者手動呼叫 `/ito-cleanup`，agent 不自行判斷是否執行。**
 
-- PR 提交前，確認 debug log 和多餘 import 已清除
 - 完成功能實作後，整理該檔案 code 品質
-- code review 前發現巢狀過深、泛用命名等問題需修正
+- 發現 code 有巢狀過深、泛用命名、殘留 debug log 等問題需修正
 
 **不應使用的情況：** 需要修改邏輯或新增功能的任務、大幅重構架構、尚未完成實作的半成品 code。
 
@@ -83,7 +82,7 @@ description: 清理 git 變更或單一檔案中的程式碼，移除 debug log�
    src/components/Auth.tsx:42: TODO: 處理 token 過期的 edge case
    app/models/user.rb:18: FIXME: 此處的 N+1 查詢需要優化
    ```
-3. 提醒使用者可接著執行 `/ito-commit` 進行 commit。
+3. 展示完畢後，清理流程結束。
 
 ## 五大原則
 
@@ -145,7 +144,7 @@ function getStatusLabel(item: Item): string {
 | 合理化藉口 | 實際情況 |
 |---|---|
 | 「這段 commented-out code 可能之後用得到」 | git history 保存紀錄，孤立的 commented-out code 是噪音 |
-| 「`console.log` 只有一行，留著沒差」 | debug log 進 PR 是常見低級錯誤，統一清除是核心價值 |
+| 「`console.log` 只有一行，留著沒差」 | debug log 是常見雜訊，統一清除是核心價值 |
 | 「test 檔也應該完整清理」 | test code 命名常故意冗長，只做安全清理 |
 | 「diff 超過 500 行但我判斷可以處理」 | 閾值存在是為了保護使用者，超過就請指定範圍 |
 | 「測試沒有覆蓋這個部分，不用跑」 | 測試套件能抓到意外的 side effect，沒有完整覆蓋也要跑 |
