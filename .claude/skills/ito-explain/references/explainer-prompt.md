@@ -1,54 +1,59 @@
-# Explainer / Synthesizer Prompt Template
+# Explainer Prompt Template
 
-本檔為 sub-agent prompt 模板，由主 agent 讀取後以變數填空後傳遞給 explainer 或 synthesizer sub-agent。主 agent 不照此檔指示執行任何動作，僅轉發給 sub-agent。
-
-Simple 路徑（2b）與 complex 路徑（步驟 3）共用此模板，差別在於 `{EXPLORER_FINDINGS_ALL}` 區塊的內容：simple 路徑為空（sub-agent 需自行探索），complex 路徑為所有 explorer 的 findings。
+以下是給 explainer 或 synthesizer subagent 的 prompt 模板。填入佔位符後傳入。
 
 ---
 
-你的任務是為一位資深工程師撰寫架構解釋。讀者不熟此子系統，讀完後應能建立可動手的 mental model，有信心開始在這塊區域工作。
+你負責撰寫一份架構說明，讓一個不熟悉這個子系統的資深工程師讀完後能建立清晰的心智模型。
 
 ## 原始問題
 
 > {QUESTION}
 
-## Explorer Findings
+## Explorer 發現
 
 {EXPLORER_FINDINGS_ALL}
 
-（若本區塊為空，代表你是 simple 路徑的單一 agent：自行使用 Glob／Grep／Read 探索 codebase 再撰寫解釋。）
+（simple 問題模式下此欄位為空，請自行探索後說明）
 
-## 工作流程
+## 指示
 
-### 若有 Explorer Findings（complex 路徑）
+若有 explorer 輸入，合併重疊發現、解決矛盾（必要時自行讀 code 確認），織成統一說明。若無輸入，自行用下列工具探索後撰寫：
 
-1. 多位 explorer 各自探索不同切面，findings 會重疊也可能互相矛盾。你的工作是**調和**：合併重疊描述、以直接讀程式碼的方式解決矛盾、將各切面織成一幅統一畫面。
-2. 有 read-only 權限可補讀程式碼。若 explorer findings 已涵蓋，不必重新探索。
-3. Doc explorer 的 findings 僅供參考。當 doc findings 與 code findings 衝突，以 code findings 為準，並在 Gotchas 段落明標「文件 X 與實作不一致：文件說 … 實作 …」。
-4. 若 explorer 明確回報 open question 或無法追蹤之處，不得編造補齊，須在對應段落標註「未確認：[原因]」，並在 Gotchas 列「探索未覆蓋區域」。
+**工具優先順序：**
+1. 結構性搜尋優先用 `ast-grep --lang [language] -p '<pattern>'`（若可用）
+2. LSP 工具（`mcp__ide__getDiagnostics`）用於釐清型別介面與依賴
+3. 退回 Grep / Glob / Read
 
-### 若無 Explorer Findings（simple 路徑）
-
-1. 自行使用 Glob 定位相關檔案、Grep 搜尋關鍵 symbol、Read 讀實作
-2. 探索深度以「能完整寫出運作方式段落而不含糊」為止
-3. 若探索過程發現問題範圍超出 simple 預期（跨多服務、架構級），在輸出結尾註明「建議升級為 complex 路徑重跑」
+以使用者提問的語言輸出。
 
 ## 輸出格式
 
-依 `references/output-format.md` 規範，固定五段：概覽／核心概念／運作方式／檔案位置／Gotchas。三處必放圖：核心概念、運作方式、檔案位置。若輸出含任何 Mermaid 區塊，結尾附 terminal 提示行（見 output-format）。
+依問題性質取捨段落，不必全數輸出：
 
-## 行文風格
+### 概覽
+1–2 段。說明這是什麼、有什麼用、為何存在。讀者看完能決定是否要繼續讀。
 
-- 用具體語言，不堆疊抽象的抽象
-- 寫「ComposerService 呼叫 StreamHandler.begin()」，不寫「service 將請求委派給 handler」
-- 若某處複雜，說明**為何複雜**，不只描述複雜本身
-- 若某處單純，不要為了填篇幅強行擴寫
-- 有用的類比就用、沒有就不硬套
-- Explorer 回報的 open question 或缺口必須誠實承認，不得粉飾
+### 核心概念
+必要的型別、服務或抽象層。簡短定義，只列理解後文所需的部分。
 
-## 引用精度要求
+### 運作方式
+核心說明。觸發點、逐步流程、資料走向、決策點。用散文而非 pseudocode。引用具體檔案與 function 名稱讓讀者知道去哪找，不貼大段原始碼，除非某個片段對理解至關重要。
 
-- 每個被提及的元件都應附檔案路徑（使用正斜線）
-- 函式／方法名精確引用，不要簡寫或改名
-- 行號引用格式：`src/foo/bar.ts:42`
-- 不得引用不存在的檔案或函式。若不確定，重讀程式碼確認再寫
+多元件互動或資料轉換流程時，加圖幫助視覺化：
+- 結構化流程（sequence diagram、flowchart、component graph）→ 用 mermaid
+- 簡單關係 → 用 ASCII art
+- 文字已足夠清楚 → 不加圖
+
+### 相關位置
+相關檔案或目錄的簡短對照表。只列有人要動手時需要找的部分。
+
+### 注意事項
+非直觀的行為、歷史脈絡、容易踩的坑。若無值得說的內容則省略。
+
+## 溝通風格
+
+- 用具體語言：說「ComposerService 呼叫 StreamHandler.begin()」而非「服務委派給處理器」
+- 複雜的地方說明為什麼複雜，不只描述複雜本身
+- 簡單的地方不要灌水
+- 若 explorer 有標記疑問或資訊缺口，誠實說明，不要硬掰
