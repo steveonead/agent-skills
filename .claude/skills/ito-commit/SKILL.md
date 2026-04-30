@@ -41,6 +41,31 @@ git diff --cached -U1 --no-color
 
 若 `git status --short` 輸出含 `UU`、`AA`、`DD`、`AU`、`UA` 等 merge conflict 標記，顯示「工作區有未解衝突，請先執行 git mergetool 或手動解決後再 commit」，列出衝突檔名後結束。
 
+### 步驟 2.5：Untracked 檔案處理
+
+從 `git status --short` 輸出篩選 `??` 開頭的行。若無 `??` 行，跳過本步驟直接進入步驟 3。
+
+若有 untracked 檔案，依下列規則產生清單：
+
+- 同一目錄下超過 10 個 untracked 檔案 → 折疊為 `dir/ (N 個檔案)`
+- 10 個以下或散落在不同目錄的單一檔案 → 逐一列出
+
+顯示清單並詢問：
+
+```
+偵測到以下 untracked 檔案：
+  src/generated/ (52 個檔案)
+  scripts/debug.sh
+  .env.local
+
+是否全部納入本次 commit？(y/n)
+```
+
+- `y` → 將所有 untracked 檔案加入變更池，進入步驟 3
+- `n` → 排除全部 untracked；若工作區已無其他 staged 或 modified 變更，顯示「工作區無可 commit 的變更」後結束；否則繼續步驟 3
+
+**fast mode**：行為與 smart mode 相同，仍顯示清單並詢問，不自動納入。
+
 ### 步驟 3：Lock file 前處理
 
 偵測 lock file 模式：`package-lock.json`、`yarn.lock`、`pnpm-lock.yaml`、`*.lock`、`Cargo.lock`、`Gemfile.lock`。
@@ -125,6 +150,8 @@ git commit -m "<message>"
 | 「lock file 只有一個，放進主要分組不影響」 | lock file 固定獨立成 chore commit，不混入業務邏輯群組 |
 | 「語言看起來是英文，直接用不用問」 | 有中英混合時必須詢問，不猜測使用者偏好 |
 | 「fast mode 不用展示計畫，直接 commit 更快」 | Fast mode 仍需展示計畫等確認，只是群組只有一個 |
+| 「untracked 檔案是工作區變更，直接納入分組就好」 | Untracked 檔案可能是臨時檔或偵錯產物，必須先詢問使用者才能納入 |
+| 「fast mode 要快，untracked 自動全納入」 | Fast mode 只影響分組策略，步驟 2.5 的 untracked 詢問不可省略 |
 
 ## 警訊
 
@@ -133,6 +160,8 @@ git commit -m "<message>"
 - lock file 混入非 chore 的 commit 群組
 - commit message 超過 72 字元
 - fast mode 跳過計畫展示直接執行
+- untracked 檔案未詢問直接納入分組
+- fast mode 跳過步驟 2.5 的 untracked 詢問
 
 ## 驗證
 
