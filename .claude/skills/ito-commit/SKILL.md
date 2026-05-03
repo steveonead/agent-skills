@@ -70,7 +70,10 @@ git diff --cached -U1 --no-color
 
 偵測 lock file 模式：`package-lock.json`、`yarn.lock`、`pnpm-lock.yaml`、`*.lock`、`Cargo.lock`、`Gemfile.lock`。
 
-命中時：跳過其 diff 內容，從主要變更清單移除，建立獨立群組，commit message 固定為 `chore: update lock file`。
+命中時：跳過其 diff 內容，從主要變更清單移除，建立獨立群組，commit message 固定為：
+
+- 中文：`chore: 更新 lock file`
+- 英文：`chore: update lock file`。
 
 ### 步驟 4：敏感檔案偵測
 
