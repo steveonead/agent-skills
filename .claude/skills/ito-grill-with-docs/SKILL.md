@@ -72,13 +72,9 @@ description: 針對 codebase 相關設計、架構或術語的訪談式深挖工
 
 ### 步驟 3：收斂後存檔
 
-依序執行三步驟：
+在對話中條列所有達成共識的決策與未解問題，再依序執行：
 
-**① 討論摘要**
-
-詢問：「要將摘要存至 `docs/ito-temp/idea/[主題].md` 嗎？」確認後存檔，涵蓋所有達成共識的決策與未解問題。不需要則在對話中條列後繼續。
-
-**② CONTEXT.md 確認**
+**① CONTEXT.md 確認**
 
 列出本次新增或修改的術語，請使用者確認：
 
@@ -88,7 +84,7 @@ description: 針對 codebase 相關設計、架構或術語的訪談式深挖工
 >
 > 確認後寫入 CONTEXT.md。
 
-**③ ADR 提案**
+**② ADR 提案**
 
 列出符合以下三個門檻的決策，請使用者選擇要建立 ADR 的項目：
 
@@ -105,6 +101,8 @@ description: 針對 codebase 相關設計、架構或術語的訪談式深挖工
 - 新 ADR 使舊決策**失效**但未直接取代：將舊 ADR 的 Status 更新為 `已棄用`
 
 列出需更新的舊 ADR，請使用者確認後一併寫入。
+
+完成後提示：若需要交接到下一個 session，跑 `/ito-handoff`。
 
 ## 常見合理化藉口
 
@@ -128,7 +126,6 @@ description: 針對 codebase 相關設計、架構或術語的訪談式深挖工
 
 ## 驗證
 
-- [ ] 討論摘要已存至 `docs/ito-temp/idea/` 或在對話中條列（視使用者選擇）
 - [ ] CONTEXT.md 本次新增/修改術語已確認並寫入
 - [ ] 符合門檻的決策已提案 ADR，或使用者確認無需建立
 
@@ -136,3 +133,4 @@ description: 針對 codebase 相關設計、架構或術語的訪談式深挖工
 
 - `references/CONTEXT-FORMAT.md`：CONTEXT.md 格式規範，術語寫入時讀取
 - `references/ADR-FORMAT.md`：ADR 格式規範，建立 ADR 時讀取
+- `ito-handoff`：收斂後需保留脈絡供下一 session 接手時使用
