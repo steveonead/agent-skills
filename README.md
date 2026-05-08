@@ -41,10 +41,10 @@ ito-* 流程會搭配以下工具使用，建議一併安裝：
 |---|---|---|
 | `docs/ito-temp/idea/` | `ito-grill` | 訪談收斂後的摘要 |
 | `docs/ito-temp/prd/` | `ito-prd` | 存於 local 的 PRD 文件 |
-| `docs/ito-temp/tasks/` | `ito-issues` | 存於 local 的任務清單 |
+| `docs/ito-temp/tasks/` | `ito-tickets` | 存於 local 的任務清單 |
 | `docs/ito-temp/ui-verify/` | `ito-ui-verify` | UI 驗收報告 |
 | `docs/ito-temp/explain/` | `ito-explain` | 架構解釋存檔 |
-| `docs/ito-temp/issues/` | `ito-hunt` | 無 GitHub remote 時的 issue 草稿 |
+| `docs/ito-temp/issues/` | `ito-diagnose` | 無 GitHub remote 時的 issue 草稿 |
 
 範例 `.gitignore` 片段：
 
@@ -58,7 +58,7 @@ docs/ito-temp/
 
 ```
 ┌─ Define ──────────────┐   ┌─ Plan ──────┐   ┌─ Build ──┐   ┌─ Verify ──────┐   ┌─ Ship ────┐
-│ ito-grill ─▶ ito-prd  │─▶ │ ito-issues  │─▶ │ ito-tdd  │─▶ │ito-ui-verify  │─▶ │ito-commit │
+│ ito-grill ─▶ ito-prd  │─▶ │ ito-tickets  │─▶ │ ito-tdd  │─▶ │ito-ui-verify  │─▶ │ito-commit │
 └───────────────────────┘   └─────────────┘   └──────────┘   └───────────────┘   └───────────┘
 ```
 
@@ -66,7 +66,7 @@ docs/ito-temp/
 
 - `ito-explain`：需要建立 codebase mental model 時
 - `ito-search`：需要外部資訊（lib API、社群討論、best practice）時
-- `ito-hunt`：遇到 error message 或 bug 需系統化診斷時
+- `ito-diagnose`：遇到 error message、症狀描述或 bug 需系統化診斷時
 - `ito-cleanup`：實作完成後整理 code 品質，或手動清理指定檔案時
 
 **Meta skill**：`ito-skill` 負責建立、修改與審查 skill 本身。
@@ -81,12 +81,12 @@ docs/ito-temp/
 |---|---|---|
 | `/ito-grill` | Define | 逐一追問決策分支，壓力測試計畫或釐清需求 |
 | `/ito-prd` | Define | 將需求訪談收斂為結構化 PRD，存至 local 或建立 gh issue |
-| `/ito-issues` | Plan | 深度探索 codebase，將 PRD 拆成含驗收條件與 size 標籤的垂直 slice |
+| `/ito-tickets` | Plan | 深度探索 codebase，將 PRD 拆成含驗收條件與 size 標籤的垂直 slice |
 | `/ito-tdd` | Build | 以紅綠重構流程開發新功能，修 bug 時採用 Prove-It Pattern |
 | `/ito-ui-verify` | Verify | 透過 Chrome DevTools MCP 依需求執行 UI 層驗證，產出只列失敗項的報告 |
 | `/ito-commit` | Ship | 掃描 git 工作區改動並依語意分組，生成 Conventional Commits 計畫 |
 | `/ito-cleanup` | Build/Ship | 清理 code 品質問題（debug log、冗餘邏輯、命名等），行為完全保留 |
-| `/ito-hunt` | Debug | 假設驅動的除錯診斷，從 error message 追查 root cause |
+| `/ito-diagnose` | Debug | 假設驅動的除錯診斷，從 error message 或症狀追查 root cause |
 | `/ito-explain` | Support | 派平行 sub-agent 探索 codebase，產出含圖、資料流與設計決策的架構解釋 |
 | `/ito-search` | Support | 提供 ctx7／deepwiki／exa／gh 等外部搜尋工具組，由 agent 依 query 自選並過濾劣質網域 |
 | `/ito-skill` | Meta | 以訪談式流程建立、修改或審查 skill |
@@ -121,7 +121,7 @@ docs/ito-temp/
 
 ---
 
-### 根據 PRD 拆任務 - [`ito-issues`](.claude/skills/ito-issues/SKILL.md)
+### 根據 PRD 拆任務 - [`ito-tickets`](.claude/skills/ito-tickets/SKILL.md)
 
 **做什麼**
 - 讀取 PRD（issue 編號、本地路徑或對話），深度探索 codebase 後識別依賴圖
@@ -189,18 +189,19 @@ docs/ito-temp/
 
 ---
 
-### 假設驅動除錯 - [`ito-hunt`](.claude/skills/ito-hunt/SKILL.md)
+### 假設驅動除錯 - [`ito-diagnose`](.claude/skills/ito-diagnose/SKILL.md)
 
 **做什麼**
-- 從 error message 或 stack trace 出發，以「我認為 root cause 是 X，因為具體證據」格式提假設
+- 從 error message、stack trace 或症狀描述出發，以「我認為 root cause 是 X，因為具體證據」格式提假設
 - 一次只驗證一個假設，連續三次被反證後強制輸出 handoff 報告而非繼續猜測
-- 診斷成功後評估影響範圍，推薦直接修復或開 GitHub issue
+- 診斷成功後輸出 root cause（含 file:line）、為什麼（因果連結）、影響範圍，推薦直接修復或開 GitHub issue
 
 **使用時機**
 - 使用者貼出 error message、exception、stack trace、crash 日誌
-- 使用者說「這個 error 是什麼意思」、「為什麼會壞」且附有具體錯誤內容
+- 使用者描述症狀（如「按鈕按下去沒反應」、「logger 沒有出現」）
+- 使用者說「這個 error 是什麼意思」、「為什麼會壞」
 
-**不適用：** 沒有 error message 的模糊問題描述、需要直接修改程式碼、需要 code review
+**不適用：** 無法形成任何假設的極度模糊描述、需要直接修改程式碼、需要 code review
 
 ---
 
@@ -250,14 +251,14 @@ docs/ito-temp/
 ### 線性流程
 
 ```
-ito-grill ──▶ ito-prd ──▶ ito-issues ──▶ ito-tdd ──▶ ito-ui-verify ──▶ ito-commit
+ito-grill ──▶ ito-prd ──▶ ito-tickets ──▶ ito-tdd ──▶ ito-ui-verify ──▶ ito-commit
  (釐清)        (PRD)       (拆 task)      (實作)        (UI 驗收)          (送出)
 ```
 
 各 skill 的 SKILL.md 已內建主動接手規則：
 
 - `ito-grill` 收斂後使用者說「那來寫 PRD」，`ito-prd` 主動接手。
-- `ito-prd` 完成後使用者說「接著拆 task」，`ito-issues` 主動接手。
+- `ito-prd` 完成後使用者說「接著拆 task」，`ito-tickets` 主動接手。
 
 ### 非線性回饋
 
@@ -265,10 +266,10 @@ ito-grill ──▶ ito-prd ──▶ ito-issues ──▶ ito-tdd ──▶ ito
 
 ### 隨時可切出的橫向支援
 
-- **`ito-grill`**：在 `ito-prd`、`ito-issues`、`ito-tdd` 任一階段遇到需求不明或設計分歧時切出，完成後再回原流程。
-- **`ito-explain`**：在 `ito-issues`、`ito-tdd`、`ito-ui-verify` 任一階段需要建立 codebase mental model 時切出，產出架構解釋後再回原流程。
+- **`ito-grill`**：在 `ito-prd`、`ito-tickets`、`ito-tdd` 任一階段遇到需求不明或設計分歧時切出，完成後再回原流程。
+- **`ito-explain`**：在 `ito-tickets`、`ito-tdd`、`ito-ui-verify` 任一階段需要建立 codebase mental model 時切出，產出架構解釋後再回原流程。
 - **`ito-search`**：在任一階段需要外部資訊（lib 官方 API、GitHub repo 內部運作、bug 訊息、社群討論、best practice）時切出，取得附來源 URL 的查詢結果後再回原流程。
-- **`ito-hunt`**：遇到 error message 或難以定位的 bug 時切出，確認 root cause 後再決定直接修復或開 issue。
+- **`ito-diagnose`**：遇到 error message、症狀描述或難以定位的 bug 時切出，確認 root cause 後再決定直接修復或開 issue。
 - **`ito-cleanup`**：功能實作完成後、送出前，由使用者手動呼叫清理 code 品質，不由 agent 自行判斷是否執行。
 - **`ito-skill`**：當上述任一 skill 需要調整或新增時，透過訪談式流程處理，避免直接修改而破壞既有契約。
 

@@ -1,3 +1,4 @@
 .DS_Store
 docs/ito-temp/
 settings.local.json
+.envrc
