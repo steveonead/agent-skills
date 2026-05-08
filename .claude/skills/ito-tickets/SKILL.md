@@ -1,9 +1,9 @@
 ---
-name: ito-issues
+name: ito-tickets
 description: 從 PRD 拆出垂直 slice 任務清單，深度探索 codebase 後生成含驗收條件與 size 標籤的可執行任務，迭代確認後存至本地 Markdown 或推送為 GitHub sub-issues。適用於 PRD 完成後需拆任務或轉 GitHub issues 時。不適用於撰寫 PRD、直接實作功能、修改或關閉已建立的 GitHub issues。
 ---
 
-# ito-issues
+# ito-tickets
 
 ## 概覽
 
@@ -35,8 +35,6 @@ PRD 讀取後，**必定**執行全面探索：
 2. PRD 提到的功能是否已有部分實作
 3. 相關資料模型、API、元件的現有 pattern
 4. 可能受影響的檔案與依賴鏈
-
-使用 ast-grep 查找結構性 pattern，搭配 find 掌握目錄全貌。
 
 ### 步驟 3：識別依賴圖
 
@@ -70,7 +68,15 @@ PRD 讀取後，**必定**執行全面探索：
 2. **⚠️ 待確認清單**：PRD 與現有 codebase 有衝突或模糊的點
 3. **任務清單**：垂直 slice 任務，穿插 Checkpoint
 
-讀取 `assets/task-template.md`，依其格式填寫每個任務（標題、描述、驗收條件、Blocked by、預計碰的檔案、Size）。草稿可暫標 XL 表示任務過大需再拆，最終確認前必須拆完。S/M 是 agent 執行效果最佳的範圍。
+讀取 `assets/task-template.md`，依其格式填寫每個任務（標題、描述、驗收條件、Blocked by、Size）。草稿可暫標 XL 表示任務過大需再拆，最終確認前必須拆完。S/M 是 agent 執行效果最佳的範圍。
+
+| Size | 觸碰檔案數 | 範例 |
+|------|----------|------|
+| XS | 1 | 新增一條驗證規則 |
+| S | 1–2 | 新增一個 API endpoint |
+| M | 3–5 | 一個完整 feature slice |
+| L | 5–8 | 多元件跨模組功能 |
+| XL | 8+ | 太大，須再拆 |
 
 ### 步驟 5：草稿迭代確認
 
@@ -103,7 +109,7 @@ PRD 讀取後，**必定**執行全面探索：
 
 | 合理化藉口 | 實際情況 |
 |-----------|---------|
-| 「PRD 很清楚，不需要探索 codebase」 | 不探索就無法填 files touched，任務停在抽象層，agent 執行時才發現衝突 |
+| 「PRD 很清楚，不需要探索 codebase」 | 不探索就無法識別真實依賴鏈，任務停在抽象層，agent 執行時才發現衝突 |
 | 「先全部建成 issues，有問題再改」 | GitHub issues 建了不易批次修改，草稿迭代才是正確的確認時機 |
 | 「依賴關係很直觀，不用標 Blocked by」 | 隱性依賴在任務多時必出錯，addBlockedBy 的原生關係在 GitHub 上才可視化 |
 | 「這個 slice 有點大但還好」 | XL 任務讓 agent 中途迷失，應直接拆成 M 才能可靠執行 |
@@ -113,6 +119,7 @@ PRD 讀取後，**必定**執行全面探索：
 - 跳過 codebase 探索直接生成任務清單
 - 任務之間沒有 Blocked by 關係，但描述裡有「完成後」、「接著」等字眼
 - 出現水平切割（「建所有 schema」、「建所有 API」）
+- 描述欄出現逐層列舉（建 schema、建 API、建 UI）
 - Size 全部標 M，沒有思考拆分可能性
 - 推 GitHub 時沒有按依賴順序建立 issues，導致 issue 號碼無法正確填入
 - 對既有 issue 執行修改或關閉操作，包含 parent issue
@@ -126,7 +133,7 @@ PRD 讀取後，**必定**執行全面探索：
 
 ## 驗證
 
-- [ ] 每個任務有標題、描述、至少兩條驗收條件、Blocked by、預計碰的檔案、Size
+- [ ] 每個任務有標題、描述、至少兩條驗收條件、Blocked by、Size
 - [ ] 無 XL 任務（已拆或已標注原因）
 - [ ] 推 GitHub 時 issues 依依賴順序建立，Blocked by 關係已用 `gh api graphql` 設定
 - [ ] ⚠️ 待確認清單的衝突點已在迭代確認時由使用者處理
