@@ -1,19 +1,20 @@
 ---
-name: ito-hunt
-description: 假設驅動的除錯診斷 skill，從 error message 追查 root cause，不直接修改程式碼。適用於使用者提供 error message 或 stack trace 需要系統化找出根本原因時。適用於「這個 error 是什麼意思」、「為什麼會壞」並附有錯誤訊息時。使用者未提供 error message 時，引導提供後繼續。不適用於修改程式碼、或開 issue 以外的任務。
+name: ito-diagnose
+description: 假設驅動的除錯診斷 skill，從 error message 或症狀追查 root cause，不直接修改程式碼。適用於使用者提供 error message、stack trace 或描述症狀時。適用於「這個 error 是什麼意思」、「為什麼會壞」、「為什麼這個按鈕沒反應」、「logger 為什麼沒出現」等情境。不適用於修改程式碼、或開 issue 以外的任務。
 ---
 
-# ito-hunt：假設驅動除錯診斷
+# ito-diagnose
 
 ## 概覽
 
-從 error message 出發，用假設驅動的方式找到 root cause，再決定後續行動（直接修復或開 GitHub issue）。核心原則：沒有可測試的假設，不動任何程式碼。
+從 error message 或症狀描述出發，用假設驅動的方式找到 root cause，再決定後續行動（直接修復或開 GitHub issue）。核心原則：沒有可測試的假設，不動任何程式碼。
 
 ## 使用時機
 
 - 使用者貼出 error message、exception、stack trace、crash 日誌
 - 使用者說「報錯了」、「有錯誤訊息」並提供具體錯誤內容
 - 使用者問「這個 error 是什麼意思」且附上錯誤訊息
+- 使用者描述症狀（如「按鈕按下去沒反應」、「logger 沒有出現」）
 
 **不應使用的情況：** 需要直接修改程式碼、需要寫新功能、需要 code review。
 
@@ -21,15 +22,24 @@ description: 假設驅動的除錯診斷 skill，從 error message 追查 root c
 
 ### 步驟 1：觸發前置檢查
 
-確認使用者有提供 error message 或 stack trace。
+確認使用者描述足以形成至少一個可測試的假設，接受以下任何形式：
 
-若無，引導使用者提供錯誤資訊，不開始診斷：
+- error message 或 stack trace（如：`TypeError: Cannot read property 'x' of undefined`）
+- 症狀（如：「按鈕按下去沒反應」、「logger 沒有出現」）
+
+**若描述過於模糊（如「感覺哪裡怪怪的」），引導使用者具體說明：**
 
 ```
-看起來有問題，請提供完整的 error message 或 stack trace，才能追查 root cause。可以從 console、terminal 輸出或日誌中找到。
+能描述一下具體發生了什麼嗎？例如：哪個操作沒有反應、哪個輸出沒有出現，或是有什麼錯誤訊息。
 ```
 
-使用者提供後，進入步驟 2。
+**若來源元件或模組不明，先詢問，不確定再主動搜尋：**
+
+```
+你知道這是哪個元件或模組的問題嗎？
+```
+
+描述足夠後，進入步驟 2。
 
 ### 步驟 2：假設驅動診斷
 
@@ -80,9 +90,10 @@ description: 假設驅動的除錯診斷 skill，從 error message 追查 root c
 
 ```
 root cause：[一句話，含 file:line]
-證據：    [驗證假設的具體依據]
-影響範圍：[檔案數 / 模組 / 影響面描述]
-推薦行動：[見步驟 5]
+為什麼：   [從 root cause 出發，說明如何導致觀察到的症狀或 error，可引用 code path 與變數名]
+證據：      [驗證假設的具體依據]
+影響範圍：  [檔案數 / 模組 / 影響面描述]
+推薦行動：  [見步驟 5]
 ```
 
 ### 步驟 5：影響範圍評估與行動推薦
@@ -130,7 +141,7 @@ root cause 診斷：[步驟 4 的輸出]
 | 「我來試試這個」 | 沒有假設，在亂猜，停下先寫假設 |
 | 「我很確定是 X」 | 信心不是證據，跑一個能證明的工具再說 |
 | 「大概跟之前那個一樣」 | 拿舊模式套新症狀，從頭重讀執行路徑 |
-| 「重啟一下應該就好」 | 在逃避 error message，把最後一條 error 逐字讀完 |
+| 「重啟一下應該就好」 | 在逃避問題，先完整描述症狀或把最後一條 error 逐字讀完，再形成假設 |
 | 「這個部分不重要」 | 主動迴避的地方往往是問題所在，重點檢查 |
 | 「error 很明顯，不需要先提假設」 | 明顯的 error 也可能是症狀，不是 root cause，跳過假設會修到錯的地方 |
 | 「函式庫的 stack trace 指出問題在依賴本身」 | 依賴本身極少出 bug，問題幾乎都在自己呼叫它的方式 |
@@ -139,6 +150,7 @@ root cause 診斷：[步驟 4 的輸出]
 ## 警訊
 
 - 提假設前沒有「我認為 root cause 是...因為...」
+- 症狀描述明顯模糊卻跳過步驟 1 的引導直接提假設
 - Stack trace 指向 node_modules 卻直接在依賴裡找原因
 - 三次失敗後繼續提第四個假設
 - 影響範圍評估沒有列出判斷依據
@@ -146,9 +158,10 @@ root cause 診斷：[步驟 4 的輸出]
 
 ## 驗證
 
-- [ ] 有 error message 或 stack trace 才開始診斷
+- [ ] 輸入足以形成至少一個假設（error message、stack trace 或具體症狀描述）
 - [ ] 每個假設都有明確的測試方法和結果
 - [ ] root cause 輸出含 file:line（可查驗，非泛稱）
+- [ ] root cause 輸出含「為什麼」欄位，說明因果連結
 - [ ] 推薦行動有影響範圍評估依據
 - [ ] Issue 路徑：URL 已回傳或本地檔案已存
 
@@ -157,4 +170,4 @@ root cause 診斷：[步驟 4 的輸出]
 - 修改程式碼
 - git bisect
 - MCP tool 失敗的處理
-- 沒有 error message 的模糊問題描述
+- 無法形成任何假設的極度模糊描述（如「感覺哪裡怪怪的」）
