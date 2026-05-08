@@ -5,11 +5,11 @@
 透過 [`npx skills`](https://github.com/vercel-labs/skills)（Open Agent Skills CLI）可將本 repo 的 skill 安裝到其他專案或使用者全域：
 
 ```bash
-# 互動式新增：挑選要安裝的 skill
-npx skills add steveonead/agent-skills
+# 指定 Claude Code 與 Codex，安裝所有 skill
+npx skills add steveonead/agent-skills --agent claude-code --agent codex
 
-# 互動式更新：從來源 repo 重新拉取已安裝的 skill
-npx skills update
+# 指定 Claude Code 與 Codex，更新已安裝的 skill
+npx skills update --agent claude-code --agent codex
 
 # 互動式刪除：從已安裝的 skill 中選擇要移除的項目
 npx skills remove
@@ -39,7 +39,7 @@ ito-* 流程會搭配以下工具使用，建議一併安裝：
 
 | 路徑 | 來源 skill | 用途 |
 |---|---|---|
-| `docs/ito-temp/idea/` | `ito-grill` | 訪談收斂後的摘要 |
+| `docs/ito-temp/idea/` | `ito-grill`, `ito-grill-with-docs` | 訪談收斂後的摘要 |
 | `docs/ito-temp/prd/` | `ito-prd` | 存於 local 的 PRD 文件 |
 | `docs/ito-temp/tasks/` | `ito-tickets` | 存於 local 的任務清單 |
 | `docs/ito-temp/ui-verify/` | `ito-ui-verify` | UI 驗收報告 |
@@ -56,10 +56,35 @@ docs/ito-temp/
 
 ## 開發生命週期
 
-```
-┌─ Define ──────────────┐   ┌─ Plan ──────┐   ┌─ Build ──┐   ┌─ Verify ──────┐   ┌─ Ship ────┐
-│ ito-grill ─▶ ito-prd  │─▶ │ ito-tickets  │─▶ │ ito-tdd  │─▶ │ito-ui-verify  │─▶ │ito-commit │
-└───────────────────────┘   └─────────────┘   └──────────┘   └───────────────┘   └───────────┘
+```mermaid
+flowchart LR
+  subgraph Define
+    G[ito-grill]
+    GD[ito-grill-with-docs]
+    P[ito-prd]
+    G --> P
+    GD --> P
+  end
+  subgraph Plan
+    T[ito-tickets]
+  end
+  subgraph Build
+    PT["ito-prototype (?)"]
+    TDD[ito-tdd]
+  end
+  subgraph Verify
+    UV[ito-ui-verify]
+  end
+  subgraph Ship
+    C[ito-commit]
+  end
+  P --> T
+  T --> TDD
+  T -. 選用 .-> PT
+  PT --> TDD
+  TDD --> UV
+  UV --> C
+  UV -. 驗證失敗 .-> TDD
 ```
 
 **橫向支援 skill**（可在任一階段切出）：
@@ -68,6 +93,7 @@ docs/ito-temp/
 - `ito-search`：需要外部資訊（lib API、社群討論、best practice）時
 - `ito-diagnose`：遇到 error message、症狀描述或 bug 需系統化診斷時
 - `ito-cleanup`：實作完成後整理 code 品質，或手動清理指定檔案時
+- `ito-grill-with-docs`：討論 codebase 設計或術語時，疊加 CONTEXT.md 對齊與 ADR 記錄
 
 **Meta skill**：`ito-skill` 負責建立、修改與審查 skill 本身。
 
@@ -80,8 +106,10 @@ docs/ito-temp/
 | Slash Command | 階段 | 核心用途 |
 |---|---|---|
 | `/ito-grill` | Define | 逐一追問決策分支，壓力測試計畫或釐清需求 |
+| `/ito-grill-with-docs` | Define | 追問 codebase 設計或架構決策，同步對齊 CONTEXT.md 術語表，收斂後提案 ADR |
 | `/ito-prd` | Define | 將需求訪談收斂為結構化 PRD，存至 local 或建立 gh issue |
 | `/ito-tickets` | Plan | 深度探索 codebase，將 PRD 拆成含驗收條件與 size 標籤的垂直 slice |
+| `/ito-prototype` | Build | 建立一次性 prototype（Logic：terminal TUI / UI：多 variant），回答設計問題後刪除 |
 | `/ito-tdd` | Build | 以紅綠重構流程開發新功能，修 bug 時採用 Prove-It Pattern |
 | `/ito-ui-verify` | Verify | 透過 Chrome DevTools MCP 依需求執行 UI 層驗證，產出只列失敗項的報告 |
 | `/ito-commit` | Ship | 掃描 git 工作區改動並依語意分組，生成 Conventional Commits 計畫 |
@@ -108,6 +136,22 @@ docs/ito-temp/
 
 ---
 
+### 釐清 Codebase 決策 - [`ito-grill-with-docs`](.claude/skills/ito-grill-with-docs/SKILL.md)
+
+**做什麼**
+- 在 ito-grill 的無情追問基礎上疊加 domain 層：追問時主動對齊 CONTEXT.md 術語、即時更新術語表
+- 術語衝突、語意模糊、新術語相似性檢查三道核查，達成共識後立即寫入 CONTEXT.md（不存在時 lazy 建立）
+- 收斂後提案符合「難以逆轉、沒有脈絡會令人意外、有真實 trade-off」三門檻的決策為 ADR，並自動掃描舊 ADR 是否需標記取代或棄用
+
+**使用時機**
+- 討論 codebase 的設計、架構或領域術語，需要同步維護術語表
+- 需要對 codebase 相關計畫進行壓力測試，同時保留決策紀錄（ADR）
+- 明確呼叫 `/ito-grill-with-docs`，或提及「對照文件討論」、「更新術語表」
+
+**不適用：** 一般性（非 codebase）討論（→ 改用 ito-grill）；需要直接實作的任務
+
+---
+
 ### 產生 PRD - [`ito-prd`](.claude/skills/ito-prd/SKILL.md)
 
 **做什麼**
@@ -131,6 +175,21 @@ docs/ito-temp/
 **使用時機**
 - 使用者說「把 PRD 拆成 task」、「建 sub-issue」、「task breakdown」
 - `ito-prd` 完成後接著拆 task
+
+---
+
+### 建立 Prototype - [`ito-prototype`](.claude/skills/ito-prototype/SKILL.md)
+
+**做什麼**
+- 先判斷問題性質：「邏輯或狀態模型感覺對嗎？」→ Logic 分支（terminal TUI 逐步操作並輸出完整狀態）；「畫面應該長什麼樣？」→ UI 分支（多個截然不同的 variant，可在瀏覽器切換）
+- Prototype 命名清楚標示為一次性，一個指令即可啟動，不寫測試、不做抽象化、不做多餘錯誤處理
+- 完成後建立 `NOTES.md`（問題 / 答案 / 下一步），再決定刪除或將驗證過的決策摺進正式程式碼
+
+**使用時機**
+- 使用者說「做個 prototype」、「先試試看」、「prototype this」、「try a few designs」
+- 想驗證狀態機、資料模型或 API 介面是否符合直覺，或在確定設計前先看截然不同的版面
+
+**不適用：** 正式功能實作、需要有測試覆蓋的程式碼、方向已確定只需要直接寫的任務
 
 ---
 
@@ -250,15 +309,32 @@ docs/ito-temp/
 
 ### 線性流程
 
-```
-ito-grill ──▶ ito-prd ──▶ ito-tickets ──▶ ito-tdd ──▶ ito-ui-verify ──▶ ito-commit
- (釐清)        (PRD)       (拆 task)      (實作)        (UI 驗收)          (送出)
+```mermaid
+flowchart LR
+  G["ito-grill<br/>釐清需求"]
+  GD["ito-grill-with-docs<br/>釐清 + docs"]
+  P["ito-prd<br/>PRD"]
+  T["ito-tickets<br/>拆 task"]
+  PT["ito-prototype<br/>設計探索"]
+  TDD["ito-tdd<br/>實作"]
+  UV["ito-ui-verify<br/>UI 驗收"]
+  C["ito-commit<br/>送出"]
+  G --> P
+  GD --> P
+  P --> T
+  T --> TDD
+  T -. 選用 .-> PT
+  PT --> TDD
+  TDD --> UV
+  UV --> C
+  UV -. 驗證失敗 .-> TDD
 ```
 
 各 skill 的 SKILL.md 已內建主動接手規則：
 
-- `ito-grill` 收斂後使用者說「那來寫 PRD」，`ito-prd` 主動接手。
+- `ito-grill` / `ito-grill-with-docs` 收斂後使用者說「那來寫 PRD」，`ito-prd` 主動接手。
 - `ito-prd` 完成後使用者說「接著拆 task」，`ito-tickets` 主動接手。
+- `ito-prototype` 為 Plan → Build 之間的可選探索步驟，方向確定後再進入 `ito-tdd`。
 
 ### 非線性回饋
 
@@ -267,6 +343,7 @@ ito-grill ──▶ ito-prd ──▶ ito-tickets ──▶ ito-tdd ──▶ it
 ### 隨時可切出的橫向支援
 
 - **`ito-grill`**：在 `ito-prd`、`ito-tickets`、`ito-tdd` 任一階段遇到需求不明或設計分歧時切出，完成後再回原流程。
+- **`ito-grill-with-docs`**：在 `ito-tickets`、`ito-tdd` 任一階段討論 codebase 設計或術語時切出，同步維護 CONTEXT.md 術語表與 ADR 決策紀錄，完成後再回原流程。
 - **`ito-explain`**：在 `ito-tickets`、`ito-tdd`、`ito-ui-verify` 任一階段需要建立 codebase mental model 時切出，產出架構解釋後再回原流程。
 - **`ito-search`**：在任一階段需要外部資訊（lib 官方 API、GitHub repo 內部運作、bug 訊息、社群討論、best practice）時切出，取得附來源 URL 的查詢結果後再回原流程。
 - **`ito-diagnose`**：遇到 error message、症狀描述或難以定位的 bug 時切出，確認 root cause 後再決定直接修復或開 issue。
