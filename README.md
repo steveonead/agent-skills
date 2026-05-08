@@ -8,8 +8,8 @@
 # 指定 Claude Code 與 Codex，安裝所有 skill
 npx skills add steveonead/agent-skills --agent claude-code --agent codex
 
-# 指定 Claude Code 與 Codex，更新已安裝的 skill
-npx skills update --agent claude-code --agent codex
+# 更新已安裝的 skill（用 add 代替 update，繞過 CLI bug #423/#915）
+npx skills add steveonead/agent-skills --agent claude-code --agent codex -y
 
 # 互動式刪除：從已安裝的 skill 中選擇要移除的項目
 npx skills remove
@@ -39,7 +39,7 @@ ito-* 流程會搭配以下工具使用，建議一併安裝：
 
 | 路徑 | 來源 skill | 用途 |
 |---|---|---|
-| `docs/ito-temp/idea/` | `ito-grill`, `ito-grill-with-docs` | 訪談收斂後的摘要 |
+| `docs/ito-temp/handoff/` | `ito-handoff` | 交接文件，壓縮當前對話供下一 session 接手 |
 | `docs/ito-temp/prd/` | `ito-prd` | 存於 local 的 PRD 文件 |
 | `docs/ito-temp/tasks/` | `ito-tickets` | 存於 local 的任務清單 |
 | `docs/ito-temp/ui-verify/` | `ito-ui-verify` | UI 驗收報告 |
@@ -94,6 +94,7 @@ flowchart LR
 - `ito-diagnose`：遇到 error message、症狀描述或 bug 需系統化診斷時
 - `ito-cleanup`：實作完成後整理 code 品質，或手動清理指定檔案時
 - `ito-grill-with-docs`：討論 codebase 設計或術語時，疊加 CONTEXT.md 對齊與 ADR 記錄
+- `ito-handoff`：session 結束前壓縮對話成交接文件，讓下一 session 無縫接手
 
 **Meta skill**：`ito-skill` 負責建立、修改與審查 skill 本身。
 
@@ -117,6 +118,7 @@ flowchart LR
 | `/ito-diagnose` | Debug | 假設驅動的除錯診斷，從 error message 或症狀追查 root cause |
 | `/ito-explain` | Support | 派平行 sub-agent 探索 codebase，產出含圖、資料流與設計決策的架構解釋 |
 | `/ito-search` | Support | 提供 ctx7／deepwiki／exa／gh 等外部搜尋工具組，由 agent 依 query 自選並過濾劣質網域 |
+| `/ito-handoff` | Support | 壓縮當前對話成交接文件，讓下一 session 無縫接手 |
 | `/ito-skill` | Meta | 以訪談式流程建立、修改或審查 skill |
 
 ---
@@ -128,7 +130,7 @@ flowchart LR
 **做什麼**
 - 沿決策樹分支深挖，一回合只問一題，主動挑戰假設而非被動收集資訊
 - 問題分三類：決策型（附推薦理由）、現況確認型、開放型（附預期假設）
-- 所有分支都覆蓋、所有假設都被挑戰後才宣告收斂，收斂後可存至 `docs/ito-temp/idea/`
+- 所有分支都覆蓋、所有假設都被挑戰後才宣告收斂，收斂後在對話中條列摘要並提示 `/ito-handoff`
 
 **使用時機**
 - 使用者說「我想討論」、「幫我釐清」
@@ -290,6 +292,23 @@ flowchart LR
 
 ---
 
+### 壓縮對話交接 - [`ito-handoff`](.claude/skills/ito-handoff/SKILL.md)
+
+**做什麼**
+- 壓縮當前對話成結構化交接文件，存至 `docs/ito-temp/handoff/[timestamp]-[slug].md`
+- 涵蓋本次完成事項、關鍵決策（含決策原因）、未解問題與下一步行動
+- 討論型 session 須記錄達成共識的決策與尚未解決的問題
+- 支援可選 argument 作為下一 session 的目標焦點
+
+**使用時機**
+- 使用者說「handoff」、「交接」、「幫忙整理給下一個 session」
+- 任一 session 結束前需要保留脈絡供下一 session 接手
+- 明確呼叫 `/ito-handoff`
+
+**不適用：** 需要直接實作功能；純對話摘要（非交接文件）
+
+---
+
 ### 建立、修改與審查 Skill - [`ito-skill`](.claude/skills/ito-skill/SKILL.md)
 
 **做什麼**
@@ -348,6 +367,7 @@ flowchart LR
 - **`ito-search`**：在任一階段需要外部資訊（lib 官方 API、GitHub repo 內部運作、bug 訊息、社群討論、best practice）時切出，取得附來源 URL 的查詢結果後再回原流程。
 - **`ito-diagnose`**：遇到 error message、症狀描述或難以定位的 bug 時切出，確認 root cause 後再決定直接修復或開 issue。
 - **`ito-cleanup`**：功能實作完成後、送出前，由使用者手動呼叫清理 code 品質，不由 agent 自行判斷是否執行。
+- **`ito-handoff`**：任一 session 結束前，壓縮對話脈絡成交接文件，供下一 session 接手；`ito-grill` / `ito-grill-with-docs` 收斂後亦會提示使用。
 - **`ito-skill`**：當上述任一 skill 需要調整或新增時，透過訪談式流程處理，避免直接修改而破壞既有契約。
 
 ---
