@@ -423,7 +423,7 @@ EOF
 
 - 若 `gh pr create`/`gh pr edit` 失敗，顯示完整錯誤訊息，不重試也不掩蓋，常見原因列出（網路、權限、branch 已被刪除、target branch 不存在）
 - 若 `git push` 失敗，顯示錯誤後中止，提示檢查 remote 設定與 upstream
-- 若步驟 1.6 的 `gh api` 因權限或 repo private 失敗，靜默 fallback 至內建 template，不中止流程
+- 若步驟 1.6 的 `gh api` 因權限或 repo private 失敗，fallback 至內建 template，不中止流程
 
 ## 延伸參考
 
