@@ -7,12 +7,12 @@ description: 掃描 git 工作區所有變更，智慧分組後依序 commit 並
 
 ## 概覽
 
-掃描工作區所有未提交變更，透過目錄結構與語意分析自動分組，展示計畫後依序執行 commit。支援 `/ito-commit fast` 將所有變更合為單一 commit。
+掃描工作區所有未提交變更，透過目錄結構與語意分析自動分組，展示計畫後依序執行 commit。支援 `/ito-commit --fast` 將所有變更合為單一 commit。
 
 ## 使用時機
 
 - 使用者說「commit」、「幫我 commit」、「提交變更」
-- 使用者輸入 `/ito-commit` 或 `/ito-commit fast`
+- 使用者輸入 `/ito-commit` 或 `/ito-commit --fast`
 - 需要將工作區變更整理成有意義的 commit 歷史
 
 **不應使用的情況：** 需要手動控制 staging 的情境、需要執行 git push 的任務、需要 rebase 或 cherry-pick 的情境。
@@ -22,7 +22,7 @@ description: 掃描 git 工作區所有變更，智慧分組後依序 commit 並
 ### 步驟 1：判斷模式
 
 讀取 args：
-- 含 `fast` → fast mode，進入步驟 2，步驟 6 合為單一群組
+- 含 `--fast` → fast mode，進入步驟 2，步驟 6 合為單一群組
 - 無參數 → smart mode，完整流程
 
 ### 步驟 2：掃描工作區
