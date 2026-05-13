@@ -134,7 +134,13 @@ git log --oneline -5
 
 ### 步驟 9：依序執行 Commit
 
-對每個群組依序執行：
+執行開始前顯示「重置暫存區，依分組逐一 commit 中⋯」，再執行：
+
+```bash
+git restore --staged .
+```
+
+接著對每個群組依序執行：
 
 ```bash
 git add <group files>
@@ -155,6 +161,7 @@ git commit -m "<message>"
 | 「fast mode 不用展示計畫，直接 commit 更快」 | Fast mode 仍需展示計畫等確認，只是群組只有一個 |
 | 「untracked 檔案是工作區變更，直接納入分組就好」 | Untracked 檔案可能是臨時檔或偵錯產物，必須先詢問使用者才能納入 |
 | 「fast mode 要快，untracked 自動全納入」 | Fast mode 只影響分組策略，步驟 2.5 的 untracked 詢問不可省略 |
+| 「暫存區已空，不需要 restore」 | `git restore --staged .` 對空暫存區不做任何事，無條件執行確保行為統一 |
 
 ## 警訊
 
@@ -165,6 +172,7 @@ git commit -m "<message>"
 - fast mode 跳過計畫展示直接執行
 - untracked 檔案未詢問直接納入分組
 - fast mode 跳過步驟 2.5 的 untracked 詢問
+- 步驟 9 開始前未執行 `git restore --staged .`
 
 ## 驗證
 
