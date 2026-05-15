@@ -24,7 +24,7 @@ description: 將使用者需求逐題訪談後收斂為結構化 PRD，並深度
 
 從 prompt 判斷使用者意圖：
 
-- **修改既有 PRD**：使用者提及要更新、修改某個 issue 編號或 `.md` 路徑 → 記錄來源，進入步驟 2 讀取既有內容（最終將建立新 PRD，完成後詢問是否關閉舊的）
+- **修改既有 PRD**：使用者提及要更新、修改某個 issue 編號或 `.md` 路徑 → 記錄來源，進入步驟 2 讀取既有內容（最終將建立新 PRD，完成後詢問是否廢棄舊的）
 - **建立新 PRD**：其他情況 → 跳過步驟 2，直接進入步驟 3
 
 若意圖不明確，追問一次，仍不明確則預設建立新 PRD 並告知使用者。
@@ -107,6 +107,7 @@ User Stories 盡可能多列。當使用者描述不同角色、情境或邊界�
 - 依訪談主題自動命名（例 `user-auth-refactor.md`），建立新檔
 - 若非預設路徑，執行前確認
 - 完成後回報實際寫入路徑
+- **若步驟 2 記錄了舊的 issue 編號**，亦詢問是否廢棄舊的 issue #{舊編號}，若使用者確認，依序執行同 gh issue 分支的五個廢棄動作
 
 **gh issue 分支：**
 - title 格式：`[PRD-{issue 編號}] {PRD 名稱}`
@@ -114,7 +115,12 @@ User Stories 盡可能多列。當使用者描述不同角色、情境或邊界�
 - label：固定帶 `PRD`（顏色 `#0075ca`），若 repo 無此 label 先建立
 - 初始建立時 title 僅填 `{PRD 名稱}`，取得 issue 編號後更新 title 補上前綴
 - 完成後回報 issue URL
-- **若步驟 2 記錄了舊的 issue 編號**，建立完成後詢問：「要順手關閉舊的 issue #{舊編號} 嗎？」若使用者確認，執行 `gh issue close {舊編號}`，並在舊 issue 留 comment：「已由 #{新編號} 取代」
+- **若步驟 2 記錄了舊的 issue 編號**，建立完成後詢問：「要廢棄舊的 issue #{舊編號}？（關閉 + title 加 `[Deprecated]` 前綴 + 加 `deprecated` label + 留 comment）」若使用者確認，依序執行：
+  1. 確保 `deprecated` label 存在（若不存在先建立：`gh label create deprecated --color "6c757d" --description "Replaced by newer issue"`）
+  2. 舊 issue title 改前綴為 `[Deprecated][PRD-{舊編號}] {原標題主體}`（若 title 已含 `[Deprecated]` 則不重複加）
+  3. 舊 issue 加 `deprecated` label：`gh issue edit {舊編號} --add-label "deprecated"`
+  4. 關閉舊 issue：`gh issue close {舊編號}`
+  5. 在舊 issue 留 comment：「已由 #{新編號} 取代」
 
 ## 常見合理化藉口
 
@@ -127,7 +133,8 @@ User Stories 盡可能多列。當使用者描述不同角色、情境或邊界�
 | 「US 只要 1 個就夠了」 | US 數量直接影響後續任務拆分與測試覆蓋 |
 | 「開放性問題空著寫『無』比較工整」 | 無未解問題時應省略整個段落，不補「無」 |
 | 「技術細節也順便問一問」 | 訪談聚焦產品層面，深入技術會稀釋需求討論 |
-| 「建完新 issue 就好，舊的讓使用者自己處理」 | 建完後務必詢問是否關閉舊 issue，不讓使用者自行善後 |
+| 「建完新 issue 就好，舊的讓使用者自己處理」 | 建完後務必詢問是否廢棄舊 issue，不讓使用者自行善後 |
+| 「只關閉舊 issue 就好，title 和 label 使用者自己改」 | 廢棄是整體動作，拆散會讓使用者連續下多條指令 |
 
 ## 警訊
 
@@ -139,7 +146,8 @@ User Stories 盡可能多列。當使用者描述不同角色、情境或邊界�
 - 產出 PRD 缺少固定段落
 - gh issue 更新後的 title 仍缺少 `[PRD-{編號}]` 前綴，或編號與實際 issue 編號不符
 - 無未解問題卻仍產出開放性問題段落（包含只留標題、不填內容）
-- 使用者提及既有 issue 或 PRD 路徑，建立新 issue 後未詢問是否關閉舊的
+- 使用者提及既有 issue 或 PRD 路徑，建立新 issue 後未詢問是否廢棄舊的
+- 使用者確認廢棄後，僅關閉舊 issue 而未執行完整廢棄動作（title 前綴、deprecated label、comment）
 
 ## 驗證
 
@@ -151,7 +159,7 @@ User Stories 盡可能多列。當使用者描述不同角色、情境或邊界�
 - [ ] 無未解問題時，開放性問題段落已省略
 - [ ] 本地輸出：檔案已寫入並回報路徑
 - [ ] gh 輸出：issue 已建立，帶 `PRD` label，title 格式正確，已回報 URL
-- [ ] 修改既有 PRD 分支：建立新 issue 後已詢問是否關閉舊的
+- [ ] 修改既有 PRD 分支：建立新 issue 後已詢問是否廢棄舊的；若確認，已完整執行五個廢棄動作（建 label、改 title 前綴、加 label、close、留 comment）
 
 ## 錯誤處理
 
@@ -160,6 +168,7 @@ User Stories 盡可能多列。當使用者描述不同角色、情境或邊界�
 - 若使用者回答超出選項範圍，追問釐清其產品含義，充分理解後再繼續。
 - 若步驟 2 指定的檔案或 issue 不存在，告知使用者並詢問是否繼續建立新 PRD。
 - 若 gh 分支建立 `PRD` label 失敗，告知使用者並暫停等待指示。
+- 若廢棄流程中任一 gh 指令失敗，停止並告知使用者已完成的步驟與尚未執行的步驟，等待指示。
 
 ## 延伸參考
 
