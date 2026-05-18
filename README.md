@@ -77,6 +77,7 @@ flowchart LR
 - **`ito-search`**：需要查 lib API、社群討論或 best practice 時
 - **`ito-diagnose`**：遇到 error message 或難以定位的 bug 時
 - **`ito-cleanup`**：實作完成後清理 code 品質
+- **`ito-code-review`**：送 PR 前對 git diff 執行系統性 code review
 - **`ito-grill-with-docs`**：討論 codebase 設計或術語，同步維護 CONTEXT.md 與 ADR
 - **`ito-handoff`**：session 結束前壓縮對話脈絡，讓下一個 session 無縫接手
 
@@ -100,6 +101,7 @@ flowchart LR
 | `/ito-commit` | Ship | 掃描 git 工作區改動並依語意分組，生成 Conventional Commits 計畫 |
 | `/ito-pr` | Ship | 從 git 變更與 commit 歷史自動產生 GitHub PR，含雙確認流程、語言與 scope 偵測、行為變更區塊及影片與截圖建議 |
 | `/ito-cleanup` | Build/Ship | 清理 code 品質問題（debug log、冗餘邏輯、命名等），行為完全保留 |
+| `/ito-code-review` | Build/Ship | 對 git diff 依五大面向（正確性、可讀性、架構、安全性、效能）執行 review，整合 stack 專屬 best practice 規則 |
 | `/ito-diagnose` | Debug | 假設驅動的除錯診斷，從 error message 或症狀追查 root cause |
 | `/ito-explain` | Support | 派平行 sub-agent 探索 codebase，產出含圖、資料流與設計決策的架構解釋 |
 | `/ito-search` | Support | 提供 ctx7／deepwiki／exa／gh 等外部搜尋工具組，由 agent 依 query 自選並過濾劣質網域 |
