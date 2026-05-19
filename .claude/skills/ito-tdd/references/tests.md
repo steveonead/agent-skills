@@ -6,7 +6,7 @@
 
 ```typescript
 // GOOD：測試可觀察的行為
-test("user can checkout with valid cart", async () => {
+test('有效購物車可完成結帳', async () => {
   const cart = createCart();
   cart.add(product);
   const result = await checkout(cart, paymentMethod);
@@ -28,7 +28,7 @@ test("user can checkout with valid cart", async () => {
 
 ```typescript
 // BAD：測試實作細節
-test("checkout calls paymentService.process", async () => {
+test('checkout 呼叫 paymentService.process', async () => {
   const spy = vi.spyOn(paymentService, 'process');
   await checkout(cart, payment);
   expect(spy).toHaveBeenCalledWith(cart.total);
@@ -46,14 +46,14 @@ test("checkout calls paymentService.process", async () => {
 
 ```typescript
 // BAD：繞過介面驗證
-test("createUser saves to database", async () => {
+test('createUser 寫入資料庫', async () => {
   await createUser({ name: "Alice" });
   const row = await db.query("SELECT * FROM users WHERE name = ?", ["Alice"]);
   expect(row).toBeDefined();
 });
 
 // GOOD：透過介面驗證
-test("createUser makes user retrievable", async () => {
+test('createUser 建立的使用者可以被查詢', async () => {
   const user = await createUser({ name: "Alice" });
   const retrieved = await getUser(user.id);
   expect(retrieved.name).toBe("Alice");
@@ -151,4 +151,25 @@ it('正確驗證標題', () => {
   expect(() => createTask({ title: '' })).toThrow();
   expect(createTask({ title: '  hello  ' }).title).toBe('hello');
 });
+```
+
+## 測試描述語言
+
+`describe()` 和 `it()` 的描述預設用繁體中文：
+
+- 技術術語（HTTP 狀態碼、API 名稱、method 名稱）保留英文，其餘用中文
+- 自由格式，重點是看名稱就知道在測什麼行為
+- 只對新測試套用，不改既有的英文描述
+
+```typescript
+// GOOD
+describe('密碼驗證', () => {
+  it('密碼少於 8 個字元時，驗證應失敗', () => { ... })
+  it('呼叫 POST /auth/login 且密碼錯誤時，回傳 401', () => { ... })
+})
+
+// BAD
+describe('passwordValidator', () => {
+  it('should fail when password is too short', () => { ... })
+})
 ```

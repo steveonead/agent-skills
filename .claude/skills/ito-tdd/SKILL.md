@@ -25,6 +25,8 @@ description: 以測試驅動開發引導功能實作與 bug 修復。使用者�
 
 **壞測試**耦合實作：mock 內部協作者、測試私有方法、或透過外部手段驗證。警訊：重構後測試失敗，但行為沒變。
 
+**描述語言**：`describe()` 和 `it()` 的描述預設用繁體中文。技術術語（HTTP 狀態碼、API 名稱、method 名稱等）保留英文。只對新測試套用，不改既有測試。
+
 詳細範例與 mocking 守則，讀取 `references/tests.md`。
 
 ## 反模式：水平切片
@@ -86,7 +88,7 @@ GREEN: 最少程式碼通過 → 通過
 
 所有測試通過後，尋找重構候選：
 
-- **重複邏輯** → 提取函式或 class
+- **重複邏輯** → 提取函式或 `class`
 - **過長方法** → 拆成私有 helper（測試保留在公開介面上）
 - **Shallow module** → 合併或深化
 - **Feature envy** → 把邏輯移到資料所在之處
@@ -168,5 +170,5 @@ it('完成任務時設定 completedAt', async () => {
 
 ## 延伸參考
 
-- `references/tests.md`：好測試與壞測試的對比範例，mocking 守則，DAMP、AAA、One Assertion Per Concept 等寫測試實務
+- `references/tests.md`：好測試與壞測試的對比範例，mocking 守則，DAMP、AAA、One Assertion Per Concept、測試描述語言等寫測試實務
 - `references/design.md`：為 testability 設計介面，deep module 模式
