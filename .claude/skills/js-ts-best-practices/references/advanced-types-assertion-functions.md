@@ -57,7 +57,7 @@ function loadUser(data: unknown) {
 }
 ```
 
-`assertUser` 同時負責驗證與收窄，呼叫端讀起來就像「斷言這是 User，往下走」。
+`assertUser` 同時負責驗證與收窄，呼叫端讀起來就像「斷言這是 User，繼續執行」。
 
 ## 例外
 

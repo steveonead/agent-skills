@@ -30,7 +30,7 @@ const copy2 = { ...original };
 copy2.metadata.tags.add('editor'); // 改到原 original 了
 ```
 
-JSON 序列化會悄悄丟掉特殊型別，spread 則完全沒做深複製。
+JSON 序列化會靜默地丟失特殊型別，spread 則完全沒做深複製。
 
 ## ✅ Good
 

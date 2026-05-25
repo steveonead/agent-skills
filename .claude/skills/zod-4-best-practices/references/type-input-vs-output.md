@@ -6,7 +6,7 @@ tags: [type, transform, input, output]
 
 # 含 transform 時：輸入端用 `z.input`、輸出端用 `z.infer`
 
-> 一旦 schema 有 `.transform()` / `.pipe()` / `.coerce()`，輸入型別與輸出型別會不同。用錯一邊會讓 TypeScript 騙你。
+> 一旦 schema 有 `.transform()` / `.pipe()` / `.coerce()`，輸入型別與輸出型別會不同。使用錯誤的型別端，TypeScript 的型別提示將產生誤導。
 
 ## 原因
 

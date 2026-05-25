@@ -12,7 +12,7 @@ tags: [naming, function, arrow-function]
 
 - `function` 關鍵字一眼就能辨識為函式定義，意圖比 `const x = () => {}` 明確
 - `function` 有 hoisting，模組內呼叫順序較有彈性
-- Arrow function 適合 callback 那種「不取名也沒差」的短邏輯
+- Arrow function 適合 callback 那種「不具名也可接受」的短邏輯
 
 ## ❌ Bad
 

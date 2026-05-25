@@ -37,7 +37,7 @@ const config = JSON.parse(fs.readFileSync("config.json", "utf8"));
 server.listen(config.port);
 ```
 
-驗證散落多層、env / JSON 未驗證就用。
+驗證散落多層、env / JSON 未經驗證即直接使用。
 
 ## ✅ Good
 
@@ -68,8 +68,8 @@ function saveUser(user: z.infer<typeof CreateUserRequest>) {
 }
 ```
 
-啟動時驗證 env / config 失敗就 crash，符合 fail-fast。
+啟動時驗證 env / config 若失敗，直接終止程序，符合 fail-fast 原則。
 
 ## 例外
 
-跨服務的「不信任邊界」內部仍要驗證一次，例如從 message queue 拉回來的訊息即使已經被上游 service 寫過 schema，也要再驗一次。
+跨服務的「不信任邊界」內部仍要驗證一次，例如從 message queue 讀取的訊息即使已經被上游 service 寫過 schema，也要再驗一次。

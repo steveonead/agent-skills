@@ -36,7 +36,7 @@ if (!uniqueTags.includes('typescript')) {
 }
 ```
 
-`orders.map(... users.find ...)` 是 O(n²)，幾千筆資料就會明顯卡。
+`orders.map(... users.find ...)` 是 O(n²)，幾千筆資料就會出現明顯的效能瓶頸。
 
 ## ✅ Good
 

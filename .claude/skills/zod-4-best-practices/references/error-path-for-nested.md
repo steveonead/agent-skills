@@ -12,7 +12,7 @@ tags: [error, path, nested]
 
 - 直接顯示 `issue.message` 而忽略 `path`，使用者只看到「太短」但不知道是哪個欄位
 - `path` 在 nested 結構與陣列裡是必要資訊
-- 自定 refine 時忘了帶 `path` 會讓錯誤掛在 object root，與其他欄位混在一起
+- 自訂 refine 時忘了帶 `path` 會讓錯誤掛在 object root，與其他欄位混在一起
 
 ## ❌ Bad
 

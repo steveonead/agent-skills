@@ -10,7 +10,7 @@ tags: [immutability, array, side-effect]
 
 ## 原因
 
-- 原陣列可能被多處引用，原地修改會引發遠端的副作用
+- 原陣列可能被多處引用，原地修改會在其他引用處產生副作用
 - Immutable 方法回傳新陣列，意圖清楚，也讓 React 等需要 reference 比較的場景行為正確
 - 函式維持純淨，較容易測試與推理
 

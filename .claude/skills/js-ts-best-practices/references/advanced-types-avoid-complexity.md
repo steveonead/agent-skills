@@ -17,7 +17,7 @@ tags: [advanced-types, complexity, maintainability]
 ## ❌ Bad
 
 ```ts
-// 深度遞迴 + conditional + key 變形，讀起來像加密
+// 深度遞迴 + conditional + key 變形，可讀性極差
 type DeepCamelCase<T> = T extends object
   ? {
       [K in keyof T as K extends string

@@ -11,7 +11,7 @@ tags: [object, partial, pick, omit, dry]
 ## 原因
 
 - 重新定義等於放棄「schema 是單一真相」這個保證
-- 三個 schema 各自演化會出現「create 有的欄位 update 沒有」這種莫名 bug
+- 三個 schema 各自演化會出現「create 有的欄位 update 沒有」這類難以追溯的 bug
 - `.partial()` / `.pick()` / `.omit()` 是 Zod 4 中保留型別的衍生方式
 
 ## ❌ Bad
@@ -46,7 +46,7 @@ const PublicUser = z.object({
 });
 ```
 
-新增欄位要記得四處同步，幾乎一定漏。
+新增欄位須手動逐一同步，極易遺漏。
 
 ## ✅ Good
 

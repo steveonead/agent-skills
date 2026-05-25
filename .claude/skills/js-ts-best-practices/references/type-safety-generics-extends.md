@@ -22,7 +22,7 @@ function getId(item: any) {
   return item.id;
 }
 
-// 太具體，沒法複用
+// 太具體，無法複用
 function getUserId(user: { id: number; name: string }) {
   return user.id;
 }

@@ -10,7 +10,7 @@ tags: [v4, datetime, iso, deprecated]
 
 ## 原因
 
-- `z.iso.*` 表達意圖更明確，一看就知道驗證 ISO 8601 格式
+- `z.iso.*` 語義明確，可直接辨識為 ISO 8601 格式驗證
 - 與其他字串格式（`z.email()` 等）的 top-level 設計一致
 - Zod 3 的 `z.string().datetime()` 在 v4 已 deprecate
 

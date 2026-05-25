@@ -27,7 +27,7 @@ async function loadDashboard(userId: string) {
 }
 ```
 
-三個 API 沒有依賴關係，依序 `await` 純粹浪費時間。
+三個 API 沒有依賴關係，依序 `await` 造成不必要的等待。
 
 ## ✅ Good
 

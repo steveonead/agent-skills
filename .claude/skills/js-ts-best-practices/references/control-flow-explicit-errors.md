@@ -27,7 +27,7 @@ async function fetchUser(id: string) {
 }
 ```
 
-呼叫端拿到 `undefined` 不知道是「沒這個 user」還是「網路掛了」，後續判斷全錯。
+呼叫端拿到 `undefined` 不知道是「沒這個 user」還是「網路連線失敗」，後續判斷全錯。
 
 ## ✅ Good
 
@@ -46,7 +46,7 @@ async function fetchUser(id: string): Promise<User> {
 }
 ```
 
-呼叫端收到的不是 `User` 就是明確 throw，不會出現「拿到 undefined 卻不知為何」的情況。
+呼叫端收到的不是 `User` 就是明確 throw，不會出現「拿到 undefined 卻不知原因」的情況。
 
 ## 例外
 

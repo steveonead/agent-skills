@@ -10,7 +10,7 @@ tags: [v4, error, message, errorMap, deprecated]
 
 ## 原因
 
-- v3 四個 API 互相覆蓋、優先級不明，常造成「為什麼錯誤訊息沒換掉」的困惑
+- v3 四個 API 互相覆蓋、優先級不明，常造成錯誤訊息未如預期更新的困惑
 - v4 統一為 `error`，行為一致；同時支援靜態字串與動態函式
 - `invalid_type_error` / `required_error` 不對應任何 Zod 實際 issue code（沒有 `required` issue code），是 v3 的設計遺憾
 

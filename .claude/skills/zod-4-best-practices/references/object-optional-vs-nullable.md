@@ -6,7 +6,7 @@ tags: [object, optional, nullable, semantics]
 
 # `.optional()` 與 `.nullable()` 語意要分清楚
 
-> `.optional()` 表示「欄位可以省略」（值為 `undefined` 或不存在），`.nullable()` 表示「值可以是 `null`」。兩者語意不同，混用會傳染整個 API。
+> `.optional()` 表示「欄位可以省略」（值為 `undefined` 或不存在），`.nullable()` 表示「值可以是 `null`」。兩者語意不同，混用將破壞整個 API 的語意一致性。
 
 ## 原因
 

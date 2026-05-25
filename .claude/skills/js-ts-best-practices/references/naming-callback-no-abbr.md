@@ -10,7 +10,7 @@ tags: [naming, callback, readability]
 
 ## 原因
 
-- 單字母參數讀到一半得回頭看 callback 接的是什麼集合，閱讀成本高
+- 單字母參數需要回頭確認 callback 接的是什麼集合，閱讀成本高
 - 鏈式操作（`.filter().map().reduce()`）裡縮寫名稱很容易跟其他變數混淆
 - 完整命名能讓 callback 內的邏輯獨立可讀，不靠上下文就能懂
 

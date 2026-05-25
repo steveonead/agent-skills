@@ -12,7 +12,7 @@ tags: [schema, type-safety, any, unknown]
 
 - `z.any()` 推出來的型別是 `any`，會關掉所有後續欄位的型別檢查
 - `z.unknown()` 推出來的型別是 `unknown`，使用前必須先 narrow，強迫呼叫端負責
-- Schema 用 `any` 表示「不在乎驗證」，那為什麼還要寫 schema
+- 使用 `any` 等於放棄 schema 的驗證意義
 
 ## ❌ Bad
 
@@ -29,7 +29,7 @@ function handle(payload: z.infer<typeof WebhookPayload>) {
 }
 ```
 
-`payload.data` 被推成 `any`，整條鏈一路關閉型別檢查，runtime 才會 throw。
+`payload.data` 被推成 `any`，後續整個呼叫鏈的型別檢查均被關閉，錯誤須等到 runtime 才會發現。
 
 ## ✅ Good
 

@@ -12,7 +12,7 @@ tags: [integration, json-schema, ai, openapi, v4]
 
 - 手寫 JSON Schema 與 Zod 一定會 drift，特別是欄位增刪時
 - LLM tool definition、Anthropic / OpenAI structured output 都吃 JSON Schema
-- `z.toJSONSchema()` 是 v4 first-party，過去依賴 `zod-to-json-schema` 等第三方套件可以淘汰
+- `z.toJSONSchema()` 是 v4 first-party，過去依賴的 `zod-to-json-schema` 等第三方套件可改用內建取代
 
 ## ❌ Bad
 
@@ -37,7 +37,7 @@ const tool = {
 };
 ```
 
-Zod 改了 schema，記得回來改 JSON Schema 才同步。
+修改 Zod schema 後，需手動同步更新 JSON Schema。
 
 ## ✅ Good
 

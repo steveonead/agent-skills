@@ -34,7 +34,7 @@ export { Button } from './Button';
 export { Input } from './Input';
 ```
 
-`utils/index.ts` 不是模組邊界，建 barrel 只是讓 import 路徑短一點點，卻引入循環引用與 bundle 膨脹風險。
+`utils/index.ts` 不是模組邊界，建 barrel 只是稍微縮短 import 路徑，卻引入循環引用與 bundle 膨脹風險。
 
 ## ✅ Good
 

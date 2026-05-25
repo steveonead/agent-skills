@@ -10,7 +10,7 @@ tags: [type-safety, as, type-assertion, type-guard]
 
 ## 原因
 
-- `as` 跳過編譯器檢查，斷言錯誤要等到 runtime 才會炸
+- `as` 跳過編譯器檢查，斷言錯誤要等到 runtime 才會拋出錯誤
 - Type guard 同時是 runtime 檢查與型別收窄，兩者一致
 - 限制白名單在安全與便利之間取得平衡
 

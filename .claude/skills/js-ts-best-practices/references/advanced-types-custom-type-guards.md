@@ -67,7 +67,7 @@ function process(data: unknown) {
 }
 ```
 
-`isUser` 同時是 runtime 檢查與型別收窄的單一來源，呼叫端直接用 `if (isUser(...))` 就好。
+`isUser` 同時是 runtime 檢查與型別收窄的單一來源，呼叫端直接用 `if (isUser(...))` 即可。
 
 ## 例外
 

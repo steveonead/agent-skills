@@ -25,7 +25,7 @@ function handleLogin(input: unknown) {
 }
 ```
 
-任何欄位不符都會炸掉 handler，要靠最外層 try/catch 接，邏輯散落各處。
+任何欄位不符都會拋出例外，須仰賴最外層 try/catch 攔截，錯誤處理邏輯散落各處。
 
 ## ✅ Good
 

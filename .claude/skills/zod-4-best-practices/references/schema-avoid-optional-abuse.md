@@ -11,7 +11,7 @@ tags: [schema, optional, design]
 ## 原因
 
 - 過多 optional 讓 schema 等於「什麼都收」，validation 失去意義
-- 呼叫端被迫到處寫 `if (x !== undefined)`，傳染整個 codebase
+- 呼叫端被迫到處寫 `if (x !== undefined)`，擴散至整個 codebase
 - TypeScript 推出來的型別與真實意圖不一致，是 bug 溫床
 
 ## ❌ Bad
@@ -27,7 +27,7 @@ const CreateUserRequest = z.object({
 });
 ```
 
-建立使用者怎麼可能 email / password 是 optional？這個 schema 等同於沒做事。
+建立使用者時，email 與 password 應為必填欄位；全標為 optional 使此 schema 失去驗證效果。
 
 ## ✅ Good
 

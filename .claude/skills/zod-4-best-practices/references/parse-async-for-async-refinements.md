@@ -12,7 +12,7 @@ tags: [parse, async, refinement]
 
 - Zod 的同步 / async parse 是兩條獨立的 code path
 - 在 async refine 用同步 parse 不會「等」async 完成，會直接 throw
-- 這個錯誤通常 dev 環境才會浮出，production 流量大時才爆炸的機率很高
+- 這個錯誤在 dev 環境通常不易察覺，在 production 高流量下才觸發的風險相當高
 
 ## ❌ Bad
 

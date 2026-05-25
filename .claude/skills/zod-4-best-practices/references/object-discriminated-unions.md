@@ -12,7 +12,7 @@ tags: [object, union, discriminated, type-narrowing]
 
 - `z.union()` 對每個分支試 parse，所有錯誤都收集起來，效能差且錯誤訊息混亂
 - `z.discriminatedUnion()` 看 discriminator 直接挑分支，效能與訊息都好
-- TypeScript 對 discriminated union 能自動 narrow，呼叫端用起來舒服
+- TypeScript 對 discriminated union 能自動 narrow，呼叫端的型別縮窄更直觀
 - Zod 4 升級後 discriminator 還支援 union / pipe（不只是單一 literal）
 
 ## ❌ Bad
@@ -37,7 +37,7 @@ const m = Media.parse(input);
 if (m.type === "image") m.width;
 ```
 
-驗證失敗時錯誤訊息會把所有分支的不符都列出來，使用者一頭霧水。
+驗證失敗時，所有分支的錯誤均會列出，訊息冗長，難以判讀。
 
 ## ✅ Good
 

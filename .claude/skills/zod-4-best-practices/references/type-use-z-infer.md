@@ -10,7 +10,7 @@ tags: [type, inference, dry]
 
 ## 原因
 
-- Zod 的賣點就是 schema-first inference，重新手寫 interface 等於放棄這個好處
+- Zod 的核心設計優勢在於 schema-first inference，重新手寫 interface 等於放棄這個好處
 - Schema 改了 type 沒改（或反之）是真實 bug 來源，過 review 也常常漏看
 - `z.infer` 同時保留 transform、refine、coerce 後的最終型別
 

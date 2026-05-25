@@ -53,7 +53,7 @@ const DefaultStripUser = z.object({
 ```
 
 選擇準則：
-- 嚴格擋多餘欄位（API request body 防呆） → `z.strictObject()`
+- 嚴格擋多餘欄位（防止 API request body 傳入未宣告的欄位） → `z.strictObject()`
 - 保留未知欄位（轉發第三方 payload） → `z.looseObject()`
 - 移除未知欄位（多數場景） → `z.object()` 預設行為即可
 
