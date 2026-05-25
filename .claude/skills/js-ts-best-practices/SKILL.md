@@ -1,11 +1,11 @@
 ---
 name: js-ts-best-practices
-description: JavaScript / TypeScript 最佳實踐規則集，供撰寫、審查或重構 JS/TS 程式碼時參考。會先偵測 codebase 是否含 TS，若為純 JS 專案則自動略過型別相關規則。適用於新功能開發、PR self-review、重構既有程式碼。不適用於 ESLint 已能完全覆蓋的基本規則、tsconfig 設定，或面向函式庫作者的進階型別技巧。
+description: JavaScript / TypeScript 最佳實踐規則集。撰寫、審查或重構 JS/TS 程式碼時使用，涵蓋命名、控制流程、不可變、模組、型別設計與型別安全。會先偵測 codebase 是否含 TS，純 JS 專案自動略過型別規則。
 ---
 
 # JavaScript / TypeScript Best Practices
 
-這份規則集涵蓋 JS/TS 在命名、控制流程、不可變、模組、型別設計、型別安全與進階型別七大面向的實戰規則，補足 ESLint 之外仍需人為判斷的部分。
+這份規則集涵蓋 JS/TS 在命名、控制流程、不可變、模組、型別設計、型別安全與進階型別七大面向的實戰規則。
 
 ## 適用時機
 

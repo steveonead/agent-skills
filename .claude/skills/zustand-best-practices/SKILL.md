@@ -1,6 +1,6 @@
 ---
 name: zustand-best-practices
-description: Zustand 最佳實踐規則集，供撰寫、審查或重構 Zustand store 相關程式碼時參考。明確要求使用 Zustand v5 API，假設環境為純 SPA、無 SSR。適用於新功能開發、PR self-review、Zustand v4 → v5 migration。不適用於 Zustand v3 / v4 專案，或需要 SSR / Next.js App Router 整合的場景。
+description: Zustand store 最佳實踐規則集。撰寫、審查或重構 store 程式碼時使用，涵蓋 store 結構、selector、middleware 組合與元件層常見錯誤。不適用於 server 端資料的快取與同步。
 ---
 
 # Zustand Best Practices

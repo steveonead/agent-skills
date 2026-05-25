@@ -1,6 +1,6 @@
 ---
 name: tanstack-best-practices
-description: TanStack Query v5 與 TanStack Router 最佳實踐規則集，供撰寫、審查或重構 TanStack 相關程式碼時參考。明確要求 Vite + React SPA、file-based routing 環境，搭配 React Compiler annotation mode。適用於新功能開發、PR self-review、TanStack Query v4 → v5 migration。不適用於 SSR、TanStack Start、Next.js App Router、純 Server Component 情境。
+description: TanStack Query 與 TanStack Router 最佳實踐規則集。撰寫、審查或重構 TanStack 程式碼時使用，涵蓋資料管理、路由導航與兩者整合。針對 Vite + React SPA、file-based routing。不適用於 SSR、TanStack Start、Next.js App Router。
 ---
 
 # TanStack Best Practices
